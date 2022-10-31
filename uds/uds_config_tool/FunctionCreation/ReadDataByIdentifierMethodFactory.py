@@ -41,8 +41,9 @@ checkDIDRespFuncTemplate = str(
 
 checkDIDLenFuncTemplate = str(
     "def {0}():\n"
-    "    logging.info('checkDIDLenFunc called')\n"
+    "    logging.info('checkDIDLenFunc called for:')\n"
     "    logging.info('{0}')\n"
+    "    logging.info('length:')\n"
     "    logging.info('{1}')\n"
     "    return {1}"
 )
