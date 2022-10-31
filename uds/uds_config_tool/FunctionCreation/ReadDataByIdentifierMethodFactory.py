@@ -41,6 +41,7 @@ checkDIDRespFuncTemplate = str(
 
 checkDIDLenFuncTemplate = str(
     "def {0}():\n"
+    "    logging.info('checkDIDLenFunc called')\n"
     "    logging.info('{0}')\n"
     "    logging.info('{1}')\n"
     "    return {1}"
@@ -58,6 +59,7 @@ negativeResponseFuncTemplate = str(
 
 encodePositiveResponseFuncTemplate = str(
     "def {0}(input,offset):\n"
+    "    logging.info('encodePositiveResponseFunction called')"
     "    result = {{}}\n"
     "    logging.info('{0}')\n"
     "    logging.info('input:')\n"
@@ -113,7 +115,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
     @staticmethod
     def create_checkPositiveResponseFunctions(diagServiceElement, xmlElements):
-        logging.debug("--- create_checkPositiceResponseFunctions ---")
+        logging.debug(f"----- create_checkPositiceResponseFunctions() -----")
         responseId = 0
         diagnosticId = 0
 
@@ -149,7 +151,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                 startByte = int(param.find("BYTE-POSITION").text)
 
                 if semantic == "SERVICE-ID":
-                    logging.debug("PARAM: SID")
+                    logging.info("PARAM: SID")
                     responseId = int(param.find("CODED-VALUE").text)
                     bitLength = int(
                         (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
@@ -159,8 +161,9 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     responseIdEnd = startByte + listLength
                     totalLength += listLength
                     SIDLength = listLength
+                    logging.info(f"totalLength: {totalLength}")
                 elif semantic == "ID":
-                    logging.debug("PARAM: ID")
+                    logging.info("PARAM: ID")
                     diagnosticId = int(param.find("CODED-VALUE").text)
                     bitLength = int(
                         (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
@@ -169,30 +172,31 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     diagnosticIdStart = startByte
                     diagnosticIdEnd = startByte + listLength
                     totalLength += listLength
+                    logging.info(f"totalLength: {totalLength}")
                 elif semantic == "DATA":
-                    logging.debug("PARAM: DATA")
+                    logging.info("PARAM: DATA")
                     dataObjectElement = xmlElements[
                         (param.find("DOP-REF")).attrib["ID-REF"]
                     ]
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
-                        logging.debug("DOP")
+                        logging.info("DOP")
                         start = int(param.find("BYTE-POSITION").text)
                         bitLength = int(
                             dataObjectElement.find("DIAG-CODED-TYPE")
                             .find("BIT-LENGTH")
                             .text
                         )
-                        logging.debug(f"bitlength: {bitLength}")
+                        logging.info(f"bitlength: {bitLength}")
                         listLength = int(bitLength / 8)
                         totalLength += listLength
-                        logging.debug(f"totalLength: {totalLength}")
+                        logging.info(f"totalLength: {totalLength}")
                     elif dataObjectElement.tag == "STRUCTURE":
-                        logging.debug("DOP")
+                        logging.info("DOP")
                         start = int(param.find("BYTE-POSITION").text)
                         listLength = int(dataObjectElement.find("BYTE-SIZE").text)
-                        logging.debug(f"bitlength: {bitLength}")
+                        logging.info(f"bitlength: {bitLength}")
                         totalLength += listLength
-                        logging.debug(f"totalLength: {totalLength}")
+                        logging.info(f"totalLength: {totalLength}")
                     else:
                         pass
                 else:
@@ -207,12 +211,12 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
             responseIdStart,  # 2
             responseIdEnd,
         )  # 3
-        logging.debug(f"checkSIDRespFuncString: {checkSIDRespFuncString}")
+        logging.info(f"checkSIDRespFuncString: {checkSIDRespFuncString}")
         exec(checkSIDRespFuncString)
         checkSIDLenFuncString = checkSIDLenFuncTemplate.format(
             checkSIDLenFuncName, SIDLength  # 0
         )  # 1
-        logging.debug(f"checkSIDLenFuncString: {checkSIDLenFuncString}")
+        logging.info(f"checkSIDLenFuncString: {checkSIDLenFuncString}")
         exec(checkSIDLenFuncString)
         checkDIDRespFuncString = checkDIDRespFuncTemplate.format(
             checkDIDRespFuncName,  # 0
@@ -221,12 +225,12 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
             - SIDLength,  # 2... note: we no longer look at absolute pos in the response,
             diagnosticIdEnd - SIDLength,
         )  # 3      but look at the DID response as an isolated extracted element.
-        logging.debug(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
+        logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
         checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
             checkDIDLenFuncName, totalLength - SIDLength  # 0
         )  # 1
-        logging.debug(f"checkDIDLenFuncString {checkDIDLenFuncString}")
+        logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
         exec(checkDIDLenFuncString)
 
         return (
@@ -240,7 +244,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
     # @brief may need refactoring to deal with multiple positive-responses (WIP)
     @staticmethod
     def create_encodePositiveResponseFunction(diagServiceElement, xmlElements):
-        logging.debug("---- create_encodePositiveResponseFunction ---")
+        logging.info("----- create_encodePositiveResponseFunction() -----")
         positiveResponseElement = xmlElements[
             (diagServiceElement.find("POS-RESPONSE-REFS"))
             .find("POS-RESPONSE-REF")
@@ -263,23 +267,23 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     pass
 
                 if semantic == "DATA":
-                    logging.debug("PARAM: DATA")
+                    logging.info("PARAM: DATA")
                     dataObjectElement = xmlElements[
                         (param.find("DOP-REF")).attrib["ID-REF"]
                     ]
                     longName = param.find("LONG-NAME").text
-                    logging.debug(f"DOP: {longName}")
+                    logging.info(f"DOP: {longName}")
                     bytePosition = int(param.find("BYTE-POSITION").text)
                     bitLength = int(
                         dataObjectElement.find("DIAG-CODED-TYPE")
                         .find("BIT-LENGTH")
                         .text
                     )
-                    logging.debug(f"bitLength: {bitLength}")
+                    logging.info(f"bitLength: {bitLength}")
                     listLength = int(bitLength / 8)
-                    logging.debug(f"listLength: {listLength}")
+                    logging.info(f"listLength: {listLength}")
                     endPosition = bytePosition + listLength
-                    logging.debug(f"endPosition: {endPosition}")
+                    logging.info(f"endPosition: {endPosition}")
                     encodingType = dataObjectElement.find("DIAG-CODED-TYPE").attrib[
                         "BASE-DATA-TYPE"
                     ]
@@ -295,7 +299,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         functionString = "input[{1}-offset:{2}-offset]".format(
                             longName, bytePosition, endPosition
                         )
-                    logging.debug(f"functionString: {functionString}")
+                    logging.info(f"functionString: {functionString}")
                     encodeFunctions.append(
                         "result['{0}'] = {1}".format(longName, functionString)
                     )
@@ -306,7 +310,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         encodeFunctionString = encodePositiveResponseFuncTemplate.format(
             encodePositiveResponseFunctionName, "\n    ".join(encodeFunctions)
         )
-        logging.debug(f"encodeFunctionString: {encodeFunctionString}")
+        logging.info(f"Complete encodeFunctionString: {encodeFunctionString}")
         exec(encodeFunctionString)
         return locals()[encodePositiveResponseFunctionName]
 
