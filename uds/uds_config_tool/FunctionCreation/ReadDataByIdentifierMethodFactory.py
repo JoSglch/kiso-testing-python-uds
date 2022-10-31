@@ -64,7 +64,6 @@ encodePositiveResponseFuncTemplate = str(
     "    logging.info(input)\n"
     "    logging.info('offset:')\n"
     "    logging.info(offset)\n"
-    "    logging.info('{1}')\n"
     "    {1}\n"
     "    return result"
 )
