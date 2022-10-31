@@ -59,7 +59,7 @@ negativeResponseFuncTemplate = str(
 
 encodePositiveResponseFuncTemplate = str(
     "def {0}(input,offset):\n"
-    "    logging.info('encodePositiveResponseFunction called')"
+    "    logging.info('encodePositiveResponseFunction called')\n"
     "    result = {{}}\n"
     "    logging.info('{0}')\n"
     "    logging.info('input:')\n"
