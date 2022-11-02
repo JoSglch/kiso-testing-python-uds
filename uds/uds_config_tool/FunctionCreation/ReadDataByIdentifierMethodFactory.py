@@ -11,6 +11,7 @@ __status__ = "Development"
 
 import logging
 import sys
+import traceback
 
 from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.FunctionCreation.iServiceMethodFactory import \
@@ -181,6 +182,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     dataObjectElement = xmlElements[
                         (param.find("DOP-REF")).attrib["ID-REF"]
                     ]
+                    listLength = 0
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
                         logging.info("DOP")
                         start = int(param.find("BYTE-POSITION").text)
@@ -196,7 +198,11 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     elif dataObjectElement.tag == "STRUCTURE":
                         logging.info("DOP")
                         start = int(param.find("BYTE-POSITION").text)
-                        listLength = int(dataObjectElement.find("BYTE-SIZE").text)
+                        byteSizeElement = dataObjectElement.find("BYTE-SIZE")
+                        if dataObjectElement.find("BYTE-SIZE") is not None:
+                            listLength = int(byteSizeElement.text)
+                        else:
+                            logging.warning(f"Could not get BYTE-SIZE from STRUCTURE, check for DOP-REF")
                         logging.info(f"bitlength: {bitLength}")
                         totalLength += listLength
                         logging.info(f"totalLength: {totalLength}")
@@ -205,7 +211,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                 else:
                     pass
             except:
-                logging.warning(sys.exc_info())
+                logging.error(traceback.print_exc())
                 pass
 
         checkSIDRespFuncString = checkSIDRespFuncTemplate.format(
@@ -307,7 +313,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         "result['{0}'] = {1}".format(longName, functionString)
                     )
             except:
-                logging.warning(sys.exc_info())
+                logging.error(traceback.print_exc())
                 pass
 
         encodeFunctionString = encodePositiveResponseFuncTemplate.format(
