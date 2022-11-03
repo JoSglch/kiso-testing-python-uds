@@ -50,7 +50,7 @@ checkDIDLenFuncTemplate = str(
     "    logging.info('{0}')\n"
     "    logging.info('length:')\n"
     "    logging.info('{1}')\n"
-    "    return {1}"
+    "    return exec({1})"
 )
 
 negativeResponseFuncTemplate = str(
