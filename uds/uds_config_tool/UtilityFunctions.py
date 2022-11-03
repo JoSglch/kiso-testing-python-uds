@@ -1,3 +1,4 @@
+import logging
 from xml.etree.ElementTree import Element as XMLElement
 
 
@@ -186,9 +187,10 @@ def isDiagServiceTransmissionOnly(diagServiceElement):
 
 def findDescendant(name: str, root: XMLElement) -> XMLElement:
     """Search for an element in all descendants of an element by tag name, returns first instance"""
-    print(f"\nSearching for {name} in {root} ({(root.find('SHORT-NAME')).text})")
+    logging.info(f"\nSearching for {name} in {root} ({(root.find('SHORT-NAME')).text})")
     for child in root.iter():
         if child.tag == name:
+            logging.info(f"Found child: {child}")
             return child
     return None
 
