@@ -191,6 +191,7 @@ def findDescendant(name: str, root: XMLElement) -> XMLElement:
     for child in root.iter():
         if child.tag == name:
             logging.info(f"Found child: {child}")
+            logging.info(f"Reference ID is: {child.attrib['ID-REF']}")
             return child
     return None
 

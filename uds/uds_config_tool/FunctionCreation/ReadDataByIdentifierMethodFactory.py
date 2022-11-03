@@ -234,6 +234,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                             dop = None
                             if dopRef is not None:
                                 dop = xmlElements[dopRef.attrib["ID-REF"]]
+                                logging.info(f"dopRef= {dopRef}, dop= {dop}")
                             else:
                                 raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
 
