@@ -297,10 +297,10 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
         # TODO: format in the diagCodedType instead of a length
-        diagCodedTypeString = diagCodedType.getStr()
+        # diagCodedTypeString = diagCodedType.getStr()
         logging.info(f"Object str to be templated in: {diagCodedTypeString}")
         checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
-            checkDIDLenFuncName, diagCodedTypeString  # 0
+            checkDIDLenFuncName, diagCodedType  # 0
         )  # 1
         logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
         exec(checkDIDLenFuncString)
