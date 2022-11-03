@@ -8,7 +8,10 @@ class DiagCodedType(ABC):
 
     """
 
-    def __init__(self, base_data_type) -> None:
+    def __init__(
+            self,
+            # base_data_type
+        ) -> None:
         super().__init__()
         self.base_data_type = base_data_type
 
@@ -22,8 +25,12 @@ class StandardLengthType(DiagCodedType):
     """Represents the DIAG-CODED-TYPE of a POS-RESPONSE with a static length
     """
 
-    def __init__(self, base_data_type, bitLength) -> None:
-        super().__init__(base_data_type)
+    def __init__(
+            self,
+            # base_data_type,
+            bitLength
+        ) -> None:
+        super().__init__()
         self.bitLength = bitLength
 
     def calculateLength(self) -> int:
@@ -45,8 +52,14 @@ class MinMaxLengthType(DiagCodedType):
         HEX_FF = 255
 
 
-    def __init__(self, base_data_type, minLength: int, maxLength: int, termination: str) -> None:
-        super().__init__(base_data_type)
+    def __init__(
+            self,
+            # base_data_type,
+            minLength: int,
+            maxLength: int,
+            termination: str
+        ) -> None:
+        super().__init__()
         self.minLength = minLength
         self.maxLength = maxLength
         self._termination = self._getTermination(termination)

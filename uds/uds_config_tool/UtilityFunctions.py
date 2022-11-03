@@ -1,3 +1,6 @@
+from xml.etree.ElementTree import Element as XMLElement
+
+
 ##
 # param: a diag service element
 # return: a dictionary with the sdgs data elements
@@ -179,6 +182,15 @@ def isDiagServiceTransmissionOnly(diagServiceElement):
             return True
 
     return False
+
+
+def findDescendant(name: str, root: XMLElement) -> XMLElement:
+    """Search for an element in all descendants of an element by tag name, returns first instance"""
+    print(f"\nSearching for {name} in {root} ({(root.find('SHORT-NAME')).text})")
+    for child in root.iter():
+        if child.tag == name:
+            return child
+    return None
 
 
 if __name__ == "__main__":

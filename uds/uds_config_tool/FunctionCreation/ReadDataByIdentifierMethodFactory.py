@@ -16,6 +16,10 @@ import traceback
 from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.FunctionCreation.iServiceMethodFactory import \
     IServiceMethodFactory
+from uds.uds_config_tool.UtilityFunctions import findDescendant
+from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
+                                                      MinMaxLengthType,
+                                                      StandardLengthType)
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
@@ -119,7 +123,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
     @staticmethod
     def create_checkPositiveResponseFunctions(diagServiceElement, xmlElements):
-        logging.debug(f"----- create_checkPositiceResponseFunctions() -----")
+        logging.info(f"----- create_checkPositiveResponseFunctions() -----")
         responseId = 0
         diagnosticId = 0
 
@@ -143,6 +147,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
         totalLength = 0
         SIDLength = 0
+        diagCodedType: DiagCodedType = None
 
         for param in paramsElement:
             try:
@@ -178,37 +183,92 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     totalLength += listLength
                     logging.info(f"totalLength: {totalLength}")
                 elif semantic == "DATA":
+                    # TODO: create the diagCodedType in this condition
                     logging.info("PARAM: DATA")
                     dataObjectElement = xmlElements[
                         (param.find("DOP-REF")).attrib["ID-REF"]
                     ]
                     listLength = 0
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
-                        logging.info("DOP")
+                        logging.info("DATA OBJECT PROP")
                         start = int(param.find("BYTE-POSITION").text)
-                        bitLength = int(
-                            dataObjectElement.find("DIAG-CODED-TYPE")
-                            .find("BIT-LENGTH")
-                            .text
-                        )
-                        logging.info(f"bitlength: {bitLength}")
-                        listLength = int(bitLength / 8)
-                        totalLength += listLength
-                        logging.info(f"totalLength: {totalLength}")
+                        # TODO: STATIC DOP
+                        bitLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
+                        if bitLengthElement is not None:
+                            logging.info("Static Length DOP...")
+                            bitLength = int(bitLengthElement.text)
+                            logging.info(f"bitlength: {bitLength}")
+                            byteLength = int(bitLength / 8)
+                            diagCodedType = StandardLengthType(byteLength)
+                            logging.info(f"Created diagCodedType: {diagCodedType}")
+                        # TODO: DYNAMIC DOP
+                        else:
+                            logging.info("Dynamic Length DOP...")
+                            minLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("MIN-LENGTH")
+                            maxLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("MAX-LENGTH")
+                            logging.info(f"minLengthElement: {minLengthElement}, maxLengthElement: {maxLengthElement}")
+                            minLength = None
+                            maxLength = None
+                            if minLengthElement is not None:
+                                minLength = int(minLengthElement.text)
+                            if maxLengthElement is not None:
+                                maxLength = int(maxLengthElement.text)
+                            logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
+                            termination = diagCodedType.attrib["TERMINATION"]
+                            diagCodedType = MinMaxLengthType(minLength, maxLength, termination)
+                            logging.info(f"Created diagCodedType: {diagCodedType}")
+
                     elif dataObjectElement.tag == "STRUCTURE":
-                        logging.info("DOP")
-                        start = int(param.find("BYTE-POSITION").text)
+                        logging.info("STRUCTURE")
+                        # TODO: STATIC STRUCTURE
                         byteSizeElement = dataObjectElement.find("BYTE-SIZE")
                         if dataObjectElement.find("BYTE-SIZE") is not None:
-                            listLength = int(byteSizeElement.text)
+                            logging.info(f"Static Length Structure...")
+                            byteLength = int(byteSizeElement.text)
+                            diagCodedType = StandardLengthType(byteLength)
+                            logging.info(f"Created diagCodedType: {diagCodedType}")
+                        # TODO: DYNAMIC STRUCTURE
                         else:
-                            logging.warning(f"Could not get BYTE-SIZE from STRUCTURE, check for DOP-REF")
-                        logging.info(f"bitlength: {bitLength}")
-                        totalLength += listLength
-                        logging.info(f"totalLength: {totalLength}")
+                            logging.info(f"Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
+                            dopRef = findDescendant("DOP-REF", dataObjectElement)
+                            dop = None
+                            if dopRef is not None:
+                                dop = xmlElements[dopRef.attrib["ID-REF"]]
+                            else:
+                                raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
+
+                            logging.info("DATA OBJECT PROP from STRUCTURE...")
+                            # TODO: STATIC DOP
+                            bitLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
+                            if bitLengthElement is not None:
+                                logging.info("Static Length DOP...")
+                                bitLength = int(bitLengthElement.text)
+                                logging.info(f"bitlength: {bitLength}")
+                                byteLength = int(bitLength / 8)
+                                diagCodedType = StandardLengthType(byteLength)
+                                logging.info(f"Created diagCodedType: {diagCodedType}")
+                            # TODO: DYNAMIC DOP
+                            else:
+                                logging.info("Dynamic Length DOP...")
+                                minLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("MIN-LENGTH")
+                                maxLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("MAX-LENGTH")
+                                logging.info(f"minLengthElement: {minLengthElement}, maxLengthElement: {maxLengthElement}")
+                                minLength = None
+                                maxLength = None
+                                if minLengthElement is not None:
+                                    minLength = int(minLengthElement.text)
+                                if maxLengthElement is not None:
+                                    maxLength = int(maxLengthElement.text)
+                                logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
+                                termination = diagCodedType.attrib["TERMINATION"]
+                                diagCodedType = MinMaxLengthType(minLength, maxLength, termination)
+                                logging.info(f"Created diagCodedType: {diagCodedType}")
+
                     else:
+                        # neither DOP nor STRUCTURE
                         pass
                 else:
+                    # not a PARAM with SID, ID (= DID), or DATA
                     pass
             except:
                 logging.error(traceback.print_exc())
@@ -236,8 +296,9 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         )  # 3      but look at the DID response as an isolated extracted element.
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
+        # TODO: format in the diagCodedType instead of a length
         checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
-            checkDIDLenFuncName, totalLength - SIDLength  # 0
+            checkDIDLenFuncName, diagCodedType  # 0
         )  # 1
         logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
         exec(checkDIDLenFuncString)
