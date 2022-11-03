@@ -20,6 +20,10 @@ class DiagCodedType(ABC):
     def calculateLength(self, response: List[int]) -> int:
         pass
 
+    @abstractmethod
+    def getStr(self) -> str:
+        pass
+
 
 class StandardLengthType(DiagCodedType):
     """Represents the DIAG-CODED-TYPE of a POS-RESPONSE with a static length
@@ -41,6 +45,9 @@ class StandardLengthType(DiagCodedType):
 
     def __repr__(self):
         return f"{self.__class__.__name__}: length={self.bitLength}"
+
+    def getStr(self) -> str:
+        return f"{self.__class__.__name__}({self.bitLength})"
 
 
 class MinMaxLengthType(DiagCodedType):
@@ -101,3 +108,6 @@ class MinMaxLengthType(DiagCodedType):
 
     def __repr__(self):
         return f"{self.__class__.__name__}: min={self.minLength}, max={self.maxLength}, termination={self._termination}"
+
+    def getStr(self):
+        return f"{self.__class__.__name__}({self.minLength}, {self.maxLength}, {self._termination})"
