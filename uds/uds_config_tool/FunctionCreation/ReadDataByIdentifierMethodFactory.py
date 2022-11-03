@@ -260,7 +260,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                 if maxLengthElement is not None:
                                     maxLength = int(maxLengthElement.text)
                                 logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
-                                termination = diagCodedType.attrib["TERMINATION"]
+                                termination = nestedDop.find("DIAG-CODED-TYPE").attrib["TERMINATION"]
                                 diagCodedType = MinMaxLengthType(minLength, maxLength, termination)
                                 logging.info(f"Created diagCodedType: {diagCodedType}")
 
