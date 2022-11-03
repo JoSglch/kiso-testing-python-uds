@@ -10,6 +10,7 @@ __email__ = "richard.clubb@embeduk.com"
 __status__ = "Development"
 
 
+import logging
 import xml.etree.ElementTree as ET
 
 #from uds.uds_communications.Uds.Uds import Uds
@@ -300,10 +301,11 @@ class UdsTool:
                     cls.rdbiContainer.add_negativeResponseFunction(
                         negativeResponseFunction, humanName
                     )
-
+                    logging.info(f"Binding in UdsConfigTool")
                     checkFunctions = ReadDataByIdentifierMethodFactory.create_checkPositiveResponseFunctions(
                         value, xmlElements
                     )
+                    logging.info(f"checkFUnctions in UdsCOnfigTool: {checkFunctions}")
                     cls.rdbiContainer.add_checkSIDResponseFunction(checkFunctions[0], humanName)
                     cls.rdbiContainer.add_checkSIDLengthFunction(checkFunctions[1], humanName)
                     cls.rdbiContainer.add_checkDIDResponseFunction(checkFunctions[2], humanName)
