@@ -272,7 +272,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     # not a PARAM with SID, ID (= DID), or DATA
                     pass
             except:
-                logging.error(traceback.print_exc())
+                logging.warning(sys.exc_info())
                 pass
 
         checkSIDRespFuncString = checkSIDRespFuncTemplate.format(
@@ -375,7 +375,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         "result['{0}'] = {1}".format(longName, functionString)
                     )
             except:
-                logging.error(traceback.print_exc())
+                logging.warning(sys.exc_info())
                 pass
 
         encodeFunctionString = encodePositiveResponseFuncTemplate.format(
