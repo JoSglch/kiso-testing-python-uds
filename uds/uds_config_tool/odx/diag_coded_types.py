@@ -47,6 +47,7 @@ class StandardLengthType(DiagCodedType):
         return f"{self.__class__.__name__}: length={self.bitLength}"
 
     def getStr(self) -> str:
+        """str to be templated in"""
         return f"{self.__class__.__name__}({self.bitLength})"
 
 
