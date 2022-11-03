@@ -247,6 +247,8 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                 byteLength = int(bitLength / 8)
                                 diagCodedType = StandardLengthType(byteLength)
                                 logging.info(f"Created diagCodedType: {diagCodedType}")
+                            elif nestedDop.tag == "END-OF-PDU-FIELD":
+                                logging.warning(f"Found END-OF-PDU-FIELD")
                             # TODO: DYNAMIC DOP
                             else:
                                 logging.info("Dynamic Length DOP...")
@@ -298,7 +300,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         exec(checkDIDRespFuncString)
         # TODO: format in the diagCodedType instead of a length
         # diagCodedTypeString = diagCodedType.getStr()
-        logging.info(f"Object str to be templated in: {diagCodedTypeString}")
+        logging.info(f"Object str to be templated in: {diagCodedType}")
         checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
             checkDIDLenFuncName, diagCodedType  # 0
         )  # 1
