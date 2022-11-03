@@ -14,7 +14,7 @@ import logging
 from types import MethodType
 
 from uds.uds_config_tool.SupportedServices.iContainer import iContainer
-
+from uds.uds_config_tool.odx.diag_coded_types import DiagCodedType, MinMaxLengthType, StandardLengthType
 
 class ReadDataByIdentifierContainer(object):
 
@@ -136,7 +136,10 @@ class ReadDataByIdentifierContainer(object):
 
         # We have a positive response so check that it makes sense to us ...
         SIDLength = checkSIDLengthFunction()
+        logging.info(f"SIDLength: {SIDLength}")
         expectedLengths = [SIDLength]
+        #TODO: get length via objects in the list
+        logging.info(f"checkDIDLenFunctions: {checkDIDLengthFunctions}")
         expectedLengths += [
             checkDIDLengthFunctions[i]() for i in range(len(checkDIDLengthFunctions))
         ]
