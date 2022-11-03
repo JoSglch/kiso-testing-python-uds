@@ -20,10 +20,6 @@ class DiagCodedType(ABC):
     def calculateLength(self, response: List[int]) -> int:
         pass
 
-    @abstractmethod
-    def getStr(self) -> str:
-        pass
-
 
 class StandardLengthType(DiagCodedType):
     """Represents the DIAG-CODED-TYPE of a POS-RESPONSE with a static length
@@ -44,11 +40,11 @@ class StandardLengthType(DiagCodedType):
         return self.bitLength
 
     def __repr__(self):
-        return f"{self.__class__.__name__}: length={self.bitLength}"
-
-    def getStr(self) -> str:
-        """str to be templated in"""
         return f"{self.__class__.__name__}({self.bitLength})"
+
+    def __str__(self) -> str:
+        """str to be templated in"""
+        return f"{self.__class__.__name__}: length={self.bitLength}"
 
 
 class MinMaxLengthType(DiagCodedType):
@@ -108,7 +104,8 @@ class MinMaxLengthType(DiagCodedType):
                 raise ValueError(f"Response longer than expected max length")
 
     def __repr__(self):
+        return f"{self.__class__.__name__}({self.minLength}, {self.maxLength}, {self._termination})"
+
+    def __str__(self):
         return f"{self.__class__.__name__}: min={self.minLength}, max={self.maxLength}, termination={self._termination}"
 
-    def getStr(self):
-        return f"{self.__class__.__name__}({self.minLength}, {self.maxLength}, {self._termination})"
