@@ -231,16 +231,15 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         else:
                             logging.info(f"Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
                             dopRef = findDescendant("DOP-REF", dataObjectElement)
-                            dop = None
-                            if dopRef is not None:
-                                dop = xmlElements[dopRef.attrib["ID-REF"]]
-                                logging.info(f"dopRef= {dopRef}, dop= {dop}")
-                            else:
+                            if dopRef is None:
                                 raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
+
+                            nestedDop = xmlElements[dopRef.attrib["ID-REF"]]
+                            logging.info(f"dopRef= {dopRef}, dop= {nestedDop}")
 
                             logging.info("DATA OBJECT PROP from STRUCTURE...")
                             # TODO: STATIC DOP
-                            bitLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
+                            bitLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                             if bitLengthElement is not None:
                                 logging.info("Static Length DOP...")
                                 bitLength = int(bitLengthElement.text)
@@ -251,8 +250,8 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                             # TODO: DYNAMIC DOP
                             else:
                                 logging.info("Dynamic Length DOP...")
-                                minLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("MIN-LENGTH")
-                                maxLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("MAX-LENGTH")
+                                minLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("MIN-LENGTH")
+                                maxLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("MAX-LENGTH")
                                 logging.info(f"minLengthElement: {minLengthElement}, maxLengthElement: {maxLengthElement}")
                                 minLength = None
                                 maxLength = None
