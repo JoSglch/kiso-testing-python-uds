@@ -13,7 +13,7 @@ class DiagCodedType(ABC):
             # base_data_type
         ) -> None:
         super().__init__()
-        self.base_data_type = base_data_type
+        # self.base_data_type = base_data_type
 
 
     @abstractmethod
