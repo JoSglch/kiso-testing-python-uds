@@ -192,7 +192,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         logging.info("DATA OBJECT PROP")
                         start = int(param.find("BYTE-POSITION").text)
                         # TODO: STATIC DOP
-                        base_data_type = getEncoding(dataObjectElement.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"])
+                        base_data_type = dataObjectElement.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
                         logging.info(f"base data type: {base_data_type}")
                         bitLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                         if bitLengthElement is not None:
@@ -230,7 +230,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                             dop = xmlElements[
                                 findDescendant("DOP-REF", dataObjectElement).attrib["ID-REF"]
                             ]
-                            base_data_type = getEncoding(dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"])
+                            base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
                             logging.info(f"base data type: {base_data_type}")
                             diagCodedType = StandardLengthType(base_data_type, byteLength)
                             logging.info(f"Created diagCodedType: {diagCodedType}")
@@ -246,7 +246,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
                             logging.info("DATA OBJECT PROP from STRUCTURE...")
                             # TODO: STATIC DOP
-                            base_data_type = getEncoding(nestedDop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"])
+                            base_data_type = nestedDop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
                             logging.info(f"base data type: {base_data_type}")
                             bitLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                             if bitLengthElement is not None:

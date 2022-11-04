@@ -3,10 +3,6 @@ from enum import Enum, IntEnum
 from typing import List
 
 
-class BaseDataType(Enum):
-    A_ASCIISTRING = "A_ASCII",
-    A_UINT32 = "A_UINT32",
-    OTHER = "OTHER"
 class DiagCodedType(ABC):
     """Base Class for all DIAG-CODED-TYPEs
 
@@ -14,7 +10,7 @@ class DiagCodedType(ABC):
 
     def __init__(
             self,
-            base_data_type: BaseDataType
+            base_data_type: str
         ) -> None:
         super().__init__()
         self.base_data_type = base_data_type
@@ -31,7 +27,7 @@ class StandardLengthType(DiagCodedType):
 
     def __init__(
             self,
-            base_data_type: BaseDataType,
+            base_data_type: str,
             bitLength: int
         ) -> None:
         super().__init__(base_data_type)
@@ -44,10 +40,9 @@ class StandardLengthType(DiagCodedType):
         return self.bitLength
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(str({self.base_data_type}),{self.bitLength})"
+        return f"{self.__class__.__name__}('{self.base_data_type}',{self.bitLength})"
 
     def __str__(self) -> str:
-        """str to be templated in"""
         return f"{self.__class__.__name__}: base-data-type={self.base_data_type} length={self.bitLength}"
 
 
@@ -64,7 +59,7 @@ class MinMaxLengthType(DiagCodedType):
 
     def __init__(
             self,
-            base_data_type: BaseDataType,
+            base_data_type: str,
             minLength: int,
             maxLength: int,
             termination: str
@@ -110,7 +105,7 @@ class MinMaxLengthType(DiagCodedType):
                 raise ValueError(f"Response longer than expected max length")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(str({self.base_data_type}), {self.minLength}, {self.maxLength}, {self._termination})"
+        return f"{self.__class__.__name__}('{self.base_data_type}', {self.minLength}, {self.maxLength}, {self._termination})"
 
     def __str__(self):
         return f"{self.__class__.__name__}: base-data-type={self.base_data_type}, min={self.minLength}, max={self.maxLength}, termination={self._termination}"
