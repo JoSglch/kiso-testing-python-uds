@@ -78,16 +78,29 @@ class ReadDataByIdentifierContainer(object):
             print(f"Check passed, response length = {len(response)}, possible range = {resultRange}\n")
 
         # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
-        def popResponseElement(input, expectedList):
-            if expectedList == []:
+        def popResponseElement(input, expectedResponseList: List[DiagCodedType]):
+            """parses the response into components for each DID
+            """
+            if expectedResponseList == []:
                 raise Exception(
                     "Total length returned not as expected. Missing elements."
                 )
-            return (
-                input[0 : expectedList[0]],
-                input[expectedList[0] :],
-                expectedList[1:],
+            result = None
+            # take the next responseType and calculate its length in the response
+            responseType: DiagCodedType = expectedResponseList[0]
+            length = responseType.calculateLength(input)
+            logging.info(f"calculated length: {length}")
+            DIDResponseComponent = input[: length]
+            logging.info(f"calculated response comp: {DIDResponseComponent}\n")
+
+            result = (
+                DIDResponseComponent,
+                input[length: ],
+                expectedResponseList[1: ]
             )
+            logging.info(f"Result: {result}\n")
+            return result
+
 
         dids = parameter
         if type(dids) is not list:
@@ -160,23 +173,25 @@ class ReadDataByIdentifierContainer(object):
         expectedResponseTypes += [
             checkDIDLengthFunctions[i]() for i in range(len(checkDIDLengthFunctions))
         ]
-        logging.info(f"expectedLengths: {expectedResponseTypes}")
-        checkTotalResponseLength(response, expectedResponseTypes)
+        logging.info(f"expectedResponseTypes: {expectedResponseTypes}")
 
-        # We've passed the length check, so check each element (which has to be present if the length is ok) ...
-        SIDResponseComponent, responseRemaining, lengthsRemaining = popResponseElement(
-            response, expectedLengths
-        )
+        SIDResponseComponent = response[:SIDLength]
+        responseRemaining = response[SIDLength:]
+        checkTotalResponseLength(responseRemaining, expectedResponseTypes)
         checkSIDResponseFunction(SIDResponseComponent)
+        # We've passed the length check, so check each element (which has to be present if the length is ok) ...
+        expectedResponses = expectedResponseTypes[:]
+
         DIDresponses = []
-        for i in range(len(expectedLengths) - 1):
+        for i in range(len(expectedResponseTypes)):
             (
                 DIDResponseComponent,
                 responseRemaining,
-                lengthsRemaining,
-            ) = popResponseElement(responseRemaining, lengthsRemaining)
+                expectedResponses,
+            ) = popResponseElement(responseRemaining, expectedResponses)
             DIDresponses.append(DIDResponseComponent)
-            checkDIDResponseFunctions[i](DIDResponseComponent)
+            # TODO: call a check function on the object
+            # checkDIDResponseFunctions[i](DIDResponseComponent)
 
         # All is still good, so return the response ...
         returnValue = tuple(
