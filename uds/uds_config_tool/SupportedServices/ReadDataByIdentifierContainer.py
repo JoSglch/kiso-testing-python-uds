@@ -12,9 +12,13 @@ __status__ = "Development"
 
 import logging
 from types import MethodType
+from typing import List
 
+from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
+                                                      MinMaxLengthType,
+                                                      StandardLengthType)
 from uds.uds_config_tool.SupportedServices.iContainer import iContainer
-from uds.uds_config_tool.odx.diag_coded_types import DiagCodedType, MinMaxLengthType, StandardLengthType
+
 
 class ReadDataByIdentifierContainer(object):
 
@@ -51,14 +55,27 @@ class ReadDataByIdentifierContainer(object):
         # Some local functions to deal with use concatenation of a number of DIDs in RDBI operation ...
 
         # After an array of lengths has been constructed for the individual response elements, we need a simple function to check it against the response
-        def checkTotalResponseLength(input, expectedLengthsList):
-            lengthExpected = sum(expectedLengthsList)
-            if len(input) != lengthExpected:
-                raise Exception(
-                    "Total length returned not as expected. Expected: {0}; Got {1}".format(
-                        lengthExpected, len(input)
-                    )
-                )
+        def checkTotalResponseLength(response: List[int], expectedResponseTypes: List[DiagCodedType]) -> None:
+            """Calculates a total minimum and maximum for valid response length range
+            """
+            logging.info(f"\nChecking length plausibility of response length")
+            totalMinLength = 0
+            totalMaxLength = 0
+
+            for responseType in expectedResponseTypes:
+                if isinstance(responseType, StandardLengthType):
+                    totalMinLength += responseType.bitLength
+                    totalMaxLength += responseType.bitLength
+                elif isinstance(responseType, MinMaxLengthType):
+                    if responseType.minLength is not None:
+                        totalMinLength += responseType.minLength
+                    if responseType.maxLength is not None:
+                        totalMaxLength += responseType.maxLength
+            resultRange = (totalMinLength, totalMaxLength)
+
+            if len(response) < totalMinLength or len(response) > totalMaxLength:
+                raise ValueError(f"Expected response length range {resultRange} does not match received response length {len(response)}")
+            print(f"Check passed, response length = {len(response)}, possible range = {resultRange}\n")
 
         # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
         def popResponseElement(input, expectedList):
@@ -137,14 +154,14 @@ class ReadDataByIdentifierContainer(object):
         # We have a positive response so check that it makes sense to us ...
         SIDLength = checkSIDLengthFunction()
         logging.info(f"SIDLength: {SIDLength}")
-        expectedLengths = [SIDLength]
+        expectedResponseTypes: List[DiagCodedType] = []
         #TODO: get length via objects in the list
         logging.info(f"checkDIDLenFunctions: {checkDIDLengthFunctions}")
-        expectedLengths += [
+        expectedResponseTypes += [
             checkDIDLengthFunctions[i]() for i in range(len(checkDIDLengthFunctions))
         ]
-        logging.info(f"expectedLengths: {expectedLengths}")
-        checkTotalResponseLength(response, expectedLengths)
+        logging.info(f"expectedLengths: {expectedResponseTypes}")
+        checkTotalResponseLength(response, expectedResponseTypes)
 
         # We've passed the length check, so check each element (which has to be present if the length is ok) ...
         SIDResponseComponent, responseRemaining, lengthsRemaining = popResponseElement(

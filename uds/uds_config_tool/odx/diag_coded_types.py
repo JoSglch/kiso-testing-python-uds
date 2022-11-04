@@ -49,6 +49,8 @@ class StandardLengthType(DiagCodedType):
 
 class MinMaxLengthType(DiagCodedType):
     """Represents the DIAG-CODED-TYPE of a POS-RESPONSE with dynamic length
+
+    minLength or maxLength are None if they are not specified in the ODX file
     """
 
     class TerminationChar(IntEnum):
