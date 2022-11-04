@@ -1,8 +1,6 @@
 import logging
 from xml.etree.ElementTree import Element as XMLElement
 
-from uds.uds_config_tool.odx.diag_coded_types import BaseDataType
-
 
 ##
 # param: a diag service element
