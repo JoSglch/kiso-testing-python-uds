@@ -10,10 +10,10 @@ class DiagCodedType(ABC):
 
     def __init__(
             self,
-            # base_data_type
+            base_data_type: str
         ) -> None:
         super().__init__()
-        # self.base_data_type = base_data_type
+        self.base_data_type = base_data_type
 
 
     @abstractmethod
@@ -27,10 +27,10 @@ class StandardLengthType(DiagCodedType):
 
     def __init__(
             self,
-            # base_data_type,
-            bitLength
+            base_data_type: str,
+            bitLength: int
         ) -> None:
-        super().__init__()
+        super().__init__(base_data_type)
         self.bitLength = bitLength
 
     def calculateLength(self) -> int:
@@ -40,11 +40,11 @@ class StandardLengthType(DiagCodedType):
         return self.bitLength
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.bitLength})"
+        return f"{self.__class__.__name__}({self.base_data_type},{self.bitLength})"
 
     def __str__(self) -> str:
         """str to be templated in"""
-        return f"{self.__class__.__name__}: length={self.bitLength}"
+        return f"{self.__class__.__name__}: base-data-type={self.base_data_type} length={self.bitLength}"
 
 
 class MinMaxLengthType(DiagCodedType):
@@ -60,12 +60,12 @@ class MinMaxLengthType(DiagCodedType):
 
     def __init__(
             self,
-            # base_data_type,
+            base_data_type: str,
             minLength: int,
             maxLength: int,
             termination: str
         ) -> None:
-        super().__init__()
+        super().__init__(base_data_type)
         self.minLength = minLength
         self.maxLength = maxLength
         self._termination = self._getTermination(termination)
@@ -106,8 +106,8 @@ class MinMaxLengthType(DiagCodedType):
                 raise ValueError(f"Response longer than expected max length")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.minLength}, {self.maxLength}, {self._termination})"
+        return f"{self.__class__.__name__}({self.base_data_type}, {self.minLength}, {self.maxLength}, {self._termination})"
 
     def __str__(self):
-        return f"{self.__class__.__name__}: min={self.minLength}, max={self.maxLength}, termination={self._termination}"
+        return f"{self.__class__.__name__}: base-data-type={self.base_data_type}, min={self.minLength}, max={self.maxLength}, termination={self._termination}"
 

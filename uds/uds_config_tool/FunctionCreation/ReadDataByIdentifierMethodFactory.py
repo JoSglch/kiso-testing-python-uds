@@ -195,13 +195,15 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         logging.info("DATA OBJECT PROP")
                         start = int(param.find("BYTE-POSITION").text)
                         # TODO: STATIC DOP
+                        base_data_type = dataObjectElement.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+                        logging.info(f"base data type: {base_data_type}")
                         bitLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                         if bitLengthElement is not None:
                             logging.info("Static Length DOP...")
                             bitLength = int(bitLengthElement.text)
                             logging.info(f"bitlength: {bitLength}")
                             byteLength = int(bitLength / 8)
-                            diagCodedType = StandardLengthType(byteLength)
+                            diagCodedType = StandardLengthType(base_data_type, byteLength)
                             logging.info(f"Created diagCodedType: {diagCodedType}")
                         # TODO: DYNAMIC DOP
                         else:
@@ -217,7 +219,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                 maxLength = int(maxLengthElement.text)
                             logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
                             termination = diagCodedType.attrib["TERMINATION"]
-                            diagCodedType = MinMaxLengthType(minLength, maxLength, termination)
+                            diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
                             logging.info(f"Created diagCodedType: {diagCodedType}")
 
                     elif dataObjectElement.tag == "STRUCTURE":
@@ -227,7 +229,13 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         if dataObjectElement.find("BYTE-SIZE") is not None:
                             logging.info(f"Static Length Structure...")
                             byteLength = int(byteSizeElement.text)
-                            diagCodedType = StandardLengthType(byteLength)
+                            # get decoding info from first DOP
+                            dop = xmlElements[
+                                findDescendant("DOP-REF", dataObjectElement).attrib["ID-REF"]
+                            ]
+                            base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+                            logging.info(f"base data type: {base_data_type}")
+                            diagCodedType = StandardLengthType(base_data_type, byteLength)
                             logging.info(f"Created diagCodedType: {diagCodedType}")
                         # TODO: DYNAMIC STRUCTURE
                         else:
@@ -241,15 +249,18 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
                             logging.info("DATA OBJECT PROP from STRUCTURE...")
                             # TODO: STATIC DOP
+                            base_data_type = nestedDop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+                            logging.info(f"base data type: {base_data_type}")
                             bitLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                             if bitLengthElement is not None:
                                 logging.info("Static Length DOP...")
                                 bitLength = int(bitLengthElement.text)
                                 logging.info(f"bitlength: {bitLength}")
                                 byteLength = int(bitLength / 8)
-                                diagCodedType = StandardLengthType(byteLength)
+                                diagCodedType = StandardLengthType(base_data_type, byteLength)
                                 logging.info(f"Created diagCodedType: {diagCodedType}")
                             elif nestedDop.tag == "END-OF-PDU-FIELD":
+                                # TODO: handle END-OF-PDU-FIELD
                                 logging.warning(f"Found END-OF-PDU-FIELD")
                             # TODO: DYNAMIC DOP
                             else:
@@ -265,7 +276,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                     maxLength = int(maxLengthElement.text)
                                 logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
                                 termination = nestedDop.find("DIAG-CODED-TYPE").attrib["TERMINATION"]
-                                diagCodedType = MinMaxLengthType(minLength, maxLength, termination)
+                                diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
                                 logging.info(f"Created diagCodedType: {diagCodedType}")
 
                     else:

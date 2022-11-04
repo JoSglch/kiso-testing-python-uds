@@ -89,16 +89,16 @@ class ReadDataByIdentifierContainer(object):
             # take the next responseType and calculate its length in the response
             responseType: DiagCodedType = expectedResponseList[0]
             length = responseType.calculateLength(input)
-            logging.info(f"calculated length: {length}")
+            # logging.info(f"calculated length: {length}")
             DIDResponseComponent = input[: length]
-            logging.info(f"calculated response comp: {DIDResponseComponent}\n")
+            # logging.info(f"calculated response comp: {DIDResponseComponent}\n")
 
             result = (
                 DIDResponseComponent,
                 input[length: ],
                 expectedResponseList[1: ]
             )
-            logging.info(f"Result: {result}\n")
+            # logging.info(f"Result: {result}\n")
             return result
 
 
@@ -114,26 +114,26 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.requestDIDFunctions[did]
             for did in dids
         ]
-        logging.info(f"requestDIDFunctions: {requestDIDFunctions}")
+        # logging.info(f"requestDIDFunctions: {requestDIDFunctions}")
         # Adding acceptance of lists at this point, as the spec allows for multiple rdbi request to be concatenated ...
         checkSIDResponseFunction = (
             target.readDataByIdentifierContainer.checkSIDResponseFunctions[dids[0]]
         )
-        logging.info(f"checkSIDResponseFunction: {checkSIDResponseFunction}")
+        # logging.info(f"checkSIDResponseFunction: {checkSIDResponseFunction}")
         checkSIDLengthFunction = (
             target.readDataByIdentifierContainer.checkSIDLengthFunctions[dids[0]]
         )
-        logging.info(f"checkSIDLengthFunction: {checkSIDLengthFunction}")
+        # logging.info(f"checkSIDLengthFunction: {checkSIDLengthFunction}")
         checkDIDResponseFunctions = [
             target.readDataByIdentifierContainer.checkDIDResponseFunctions[did]
             for did in dids
         ]
-        logging.info(f"checkDIDResponseFunctions: {checkDIDResponseFunctions}")
+        # logging.info(f"checkDIDResponseFunctions: {checkDIDResponseFunctions}")
         checkDIDLengthFunctions = [
             target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
             for did in dids
         ]
-        logging.info(f"checkDIDLengthFunctions: {checkDIDLengthFunctions}")
+        # logging.info(f"checkDIDLengthFunctions: {checkDIDLengthFunctions}")
         # This is the same for all RDBI responses, irrespective of list or single input
         negativeResponseFunction = (
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
@@ -163,7 +163,7 @@ class ReadDataByIdentifierContainer(object):
         )  # ... return nrc value if a negative response is received
         if negativeResponse:
             return negativeResponse
-
+        logging.info(f"----- Start response parsing")
         # We have a positive response so check that it makes sense to us ...
         SIDLength = checkSIDLengthFunction()
         logging.info(f"SIDLength: {SIDLength}")
@@ -191,9 +191,10 @@ class ReadDataByIdentifierContainer(object):
             ) = popResponseElement(responseRemaining, expectedResponses)
             DIDresponses.append(DIDResponseComponent)
             # TODO: call a check function on the object
-            # checkDIDResponseFunctions[i](DIDResponseComponent)
-
+            checkDIDResponseFunctions[i](DIDResponseComponent)
+        logging.info(f"DIDResponses: {DIDresponses}")
         # All is still good, so return the response ...
+        logging.info(f"----- Start response decoding")
         returnValue = tuple(
             [
                 positiveResponseFunctions[i](DIDresponses[i], SIDLength)
