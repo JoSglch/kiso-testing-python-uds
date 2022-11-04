@@ -18,7 +18,7 @@ from uds.uds_config_tool.FunctionCreation.iServiceMethodFactory import \
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
-from uds.uds_config_tool.UtilityFunctions import findDescendant, getEncoding
+from uds.uds_config_tool.UtilityFunctions import findDescendant
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
