@@ -47,8 +47,7 @@ checkDIDLenFuncTemplate = str(
     "def {0}():\n"
     "    logging.info('checkDIDLenFunc called for:')\n"
     "    logging.info('{0}')\n"
-    "    logging.info('length:')\n"
-    "    exec('diagType = {1}')\n"
+    '    exec("diagType = {1}")\n'
     "    return locals()['diagType']"
 )
 
