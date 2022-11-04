@@ -198,15 +198,6 @@ def findDescendant(name: str, root: XMLElement) -> XMLElement:
     return None
 
 
-def getEncoding(encoding: str) -> BaseDataType:
-    btd = None
-    if encoding == "A_ASCIISTRING":
-        btd = BaseDataType.A_ASCIISTRING
-    elif encoding == "A_UINT32":
-        btd = BaseDataType.A_UINT32
-    else:
-        btd = BaseDataType.OTHER
-    return bdt
 if __name__ == "__main__":
 
     pass
