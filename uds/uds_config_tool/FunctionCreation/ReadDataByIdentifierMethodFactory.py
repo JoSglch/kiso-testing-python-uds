@@ -11,15 +11,14 @@ __status__ = "Development"
 
 import logging
 import sys
-import traceback
 
 from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.FunctionCreation.iServiceMethodFactory import \
     IServiceMethodFactory
-from uds.uds_config_tool.UtilityFunctions import findDescendant
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
+from uds.uds_config_tool.UtilityFunctions import findDescendant, getEncoding
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
@@ -189,12 +188,11 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     dataObjectElement = xmlElements[
                         (param.find("DOP-REF")).attrib["ID-REF"]
                     ]
-                    listLength = 0
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
                         logging.info("DATA OBJECT PROP")
                         start = int(param.find("BYTE-POSITION").text)
                         # TODO: STATIC DOP
-                        base_data_type = dataObjectElement.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+                        base_data_type = getEncoding(dataObjectElement.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"])
                         logging.info(f"base data type: {base_data_type}")
                         bitLengthElement = dataObjectElement.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                         if bitLengthElement is not None:
@@ -232,7 +230,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                             dop = xmlElements[
                                 findDescendant("DOP-REF", dataObjectElement).attrib["ID-REF"]
                             ]
-                            base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+                            base_data_type = getEncoding(dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"])
                             logging.info(f"base data type: {base_data_type}")
                             diagCodedType = StandardLengthType(base_data_type, byteLength)
                             logging.info(f"Created diagCodedType: {diagCodedType}")
@@ -248,7 +246,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
                             logging.info("DATA OBJECT PROP from STRUCTURE...")
                             # TODO: STATIC DOP
-                            base_data_type = nestedDop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+                            base_data_type = getEncoding(nestedDop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"])
                             logging.info(f"base data type: {base_data_type}")
                             bitLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
                             if bitLengthElement is not None:

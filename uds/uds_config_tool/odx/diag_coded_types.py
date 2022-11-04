@@ -4,8 +4,8 @@ from typing import List
 
 
 class BaseDataType(Enum):
-    A_ASCII = "A_ASCII",
-    A_UINT = "A_UINT32",
+    A_ASCIISTRING = "A_ASCII",
+    A_UINT32 = "A_UINT32",
     OTHER = "OTHER"
 class DiagCodedType(ABC):
     """Base Class for all DIAG-CODED-TYPEs
@@ -14,7 +14,7 @@ class DiagCodedType(ABC):
 
     def __init__(
             self,
-            base_data_type: str
+            base_data_type: BaseDataType
         ) -> None:
         super().__init__()
         self.base_data_type = base_data_type
@@ -31,7 +31,7 @@ class StandardLengthType(DiagCodedType):
 
     def __init__(
             self,
-            base_data_type: str,
+            base_data_type: BaseDataType,
             bitLength: int
         ) -> None:
         super().__init__(base_data_type)
@@ -64,7 +64,7 @@ class MinMaxLengthType(DiagCodedType):
 
     def __init__(
             self,
-            base_data_type: str,
+            base_data_type: BaseDataType,
             minLength: int,
             maxLength: int,
             termination: str
