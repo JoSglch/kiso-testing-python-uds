@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import List
 
 
+class BaseDataType(Enum):
+    A_ASCII = "A_ASCII",
+    A_UINT = "A_UINT32",
+    OTHER = "OTHER"
 class DiagCodedType(ABC):
     """Base Class for all DIAG-CODED-TYPEs
 
@@ -40,7 +44,7 @@ class StandardLengthType(DiagCodedType):
         return self.bitLength
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.base_data_type},{self.bitLength})"
+        return f"{self.__class__.__name__}(str({self.base_data_type}),{self.bitLength})"
 
     def __str__(self) -> str:
         """str to be templated in"""
@@ -106,7 +110,7 @@ class MinMaxLengthType(DiagCodedType):
                 raise ValueError(f"Response longer than expected max length")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.base_data_type}, {self.minLength}, {self.maxLength}, {self._termination})"
+        return f"{self.__class__.__name__}(str({self.base_data_type}), {self.minLength}, {self.maxLength}, {self._termination})"
 
     def __str__(self):
         return f"{self.__class__.__name__}: base-data-type={self.base_data_type}, min={self.minLength}, max={self.maxLength}, termination={self._termination}"
