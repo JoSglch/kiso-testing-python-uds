@@ -219,7 +219,7 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
         logging.info(f"bitlength: {bitLength}")
         byteLength = int(bitLength / 8)
         diagCodedType = StandardLengthType(base_data_type, byteLength)
-        logging.info(f"Created diagCodedType: {diagCodedType}")
+        logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
         return diagCodedType
     # TODO: MIN-MAX-LENGTH-TYPE DOP
     elif lengthType == "MIN-MAX-LENGTH-TYPE":
@@ -236,7 +236,7 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
         logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
         termination = diagCodedTypeElement.attrib["TERMINATION"]
         diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
-        logging.info(f"Created diagCodedType: {diagCodedType}")
+        logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
         return diagCodedType
 
 

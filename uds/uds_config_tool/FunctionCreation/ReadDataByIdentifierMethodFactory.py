@@ -148,7 +148,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
         totalLength = 0
         SIDLength = 0
-        DIDLength = None
+        DIDLength = 0
         diagCodedType: DiagCodedType = None
 
         for param in paramsElement:
@@ -181,6 +181,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     )
                     listLength = int(bitLength / 8)
                     DIDLength = listLength
+                    logging.info(f"DIDLength: {DIDLength}, type: {type(DIDLength)}")
                     diagnosticIdStart = startByte
                     diagnosticIdEnd = startByte + listLength
                     totalLength += listLength
@@ -238,7 +239,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                             base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
                             logging.info(f"base data type: {base_data_type}")
                             diagCodedType = StandardLengthType(base_data_type, byteLength)
-                            logging.info(f"Created diagCodedType: {diagCodedType}")
+                            logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
                         # TODO: DYNAMIC STRUCTURE
                         else:
                             logging.info(f"Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
@@ -260,7 +261,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                 logging.info(f"bitlength: {bitLength}")
                                 byteLength = int(bitLength / 8)
                                 diagCodedType = StandardLengthType(base_data_type, byteLength)
-                                logging.info(f"Created diagCodedType: {diagCodedType}")
+                                logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
                             elif nestedDop.tag == "END-OF-PDU-FIELD":
                                 # TODO: handle END-OF-PDU-FIELD
                                 logging.warning(f"Found END-OF-PDU-FIELD")
@@ -279,7 +280,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                 logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
                                 termination = nestedDop.find("DIAG-CODED-TYPE").attrib["TERMINATION"]
                                 diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
-                                logging.info(f"Created diagCodedType: {diagCodedType}")
+                                logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
 
                     else:
                         # neither DOP nor STRUCTURE
@@ -314,10 +315,11 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
         # instead of checkDIDLenFunc:
+        logging.info(f"diagCodedType: {type(diagCodedType)}, ")
         posResponse: PosResponse = PosResponse(diagCodedType, DIDLength, diagnosticId)
         # logging.info(f"locals()['diagCodedType']: {locals()['diagCodedType']}")
         # logging.info(f"locals()['posResponse']: {locals()['posResponse']}")
-        logging.info(f"posResponse: {posResponse}")
+        logging.info(f"posResponse: {posResponse}, type: {type(posResponse)}")
         return (
             locals()[checkSIDRespFuncName],
             locals()[checkSIDLenFuncName],
