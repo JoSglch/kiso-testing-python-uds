@@ -18,6 +18,7 @@ from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
 from uds.uds_config_tool.SupportedServices.iContainer import iContainer
+from uds.uds_config_tool.odx.pos_response import PosResponse
 
 
 class ReadDataByIdentifierContainer(object):
@@ -55,7 +56,7 @@ class ReadDataByIdentifierContainer(object):
         # Some local functions to deal with use concatenation of a number of DIDs in RDBI operation ...
 
         # After an array of length types has been constructed for the individual response elements, we need a simple function to check it against the response
-        def checkTotalResponseLength(response: List[int], expectedResponseTypes: List[DiagCodedType]) -> None:
+        def checkTotalResponseLength(response: List[int], expectedResponseTypes: List[PosResponse]) -> None:
             """Calculates a total minimum and maximum for valid response length range
             """
             logging.info(f"\nChecking length plausibility of response length")
@@ -63,16 +64,16 @@ class ReadDataByIdentifierContainer(object):
             totalMaxLength = 0
 
             for responseType in expectedResponseTypes:
-                # totalMinLength += responseType.DIDLength
-                # totalMaxLength += responseType.DIDLength
-                if isinstance(responseType, StandardLengthType):
-                    totalMinLength += responseType.bitLength
-                    totalMaxLength += responseType.bitLength
-                elif isinstance(responseType, MinMaxLengthType):
-                    if responseType.minLength is not None:
-                        totalMinLength += responseType.minLength
-                    if responseType.maxLength is not None:
-                        totalMaxLength += responseType.maxLength
+                totalMinLength += responseType.didLength
+                totalMaxLength += responseType.didLength
+                if isinstance(responseType.diagCodedType, StandardLengthType):
+                    totalMinLength += responseType.diagCodedType.bitLength
+                    totalMaxLength += responseType.diagCodedType.bitLength
+                elif isinstance(responseType.diagCodedType, MinMaxLengthType):
+                    if responseType.diagCodedType.minLength is not None:
+                        totalMinLength += responseType.diagCodedType.minLength
+                    if responseType.diagCodedType.maxLength is not None:
+                        totalMaxLength += responseType.diagCodedType.maxLength
             resultRange = (totalMinLength, totalMaxLength)
 
             if len(response) < totalMinLength or len(response) > totalMaxLength:
@@ -169,7 +170,7 @@ class ReadDataByIdentifierContainer(object):
         # We have a positive response so check that it makes sense to us ...
         SIDLength = checkSIDLengthFunction()
         logging.info(f"SIDLength: {SIDLength}")
-        expectedResponseTypes: List[DiagCodedType] = []
+        expectedResponseTypes: List[PosResponse] = []
         #TODO: get length via objects in the list
         logging.info(f"checkDIDLenFunctions: {checkDIDLengthFunctions}")
         expectedResponseTypes = checkDIDLengthFunctions

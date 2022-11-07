@@ -1,6 +1,8 @@
 from typing import List
 
-from uds.uds_config_tool.odx.diag_coded_types import DiagCodedType
+from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
+                                                      MinMaxLengthType,
+                                                      StandardLengthType)
 
 
 class PosResponse():
@@ -16,9 +18,34 @@ class PosResponse():
         self.didLength = didLength,
         self.DID = DID
 
+    # TODO:
     def parse(self, DIDResponse: List[int]) -> str:
         """Parse a (partial) response of a DID
         """
         toParse = DIDResponse[self.didLength:]
         parsedResponse = self.diagCodedType.parse(toParse)
         return parsedResponse
+
+    def getTotalPossibleLength(self) -> tuple(int, int):
+        """Return DIDLength + DATA length
+        """
+        totalMinLength = self.didLength
+        totalMaxLength = self.didLength
+
+        if isinstance(self.diagCodedType, StandardLengthType):
+            totalMinLength += self.diagCodedType.bitLength
+            totalMaxLength += self.diagCodedType.bitLength
+        elif isinstance(self.diagCodedType, MinMaxLengthType):
+            if self.diagCodedType.minLength is not None:
+                totalMinLength += self.diagCodedType.minLength
+            if self.diagCodedType.maxLength is not None:
+                totalMaxLength += self.diagCodedType.maxLength
+
+        return (totalMinLength, totalMaxLength)
+
+
+    def __str__(self):
+        pass
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}")

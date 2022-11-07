@@ -313,15 +313,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         )  # 3      but look at the DID response as an isolated extracted element.
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
-
-        # TODO: format in the diagCodedType instead of a length
-        # diagCodedTypeString = diagCodedType.__repr__()
-        # logging.info(f"Object str to be templated in: {diagCodedType}")
-        # checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
-        #     checkDIDLenFuncName, diagCodedTypeString  # 0
-        # )  # 1
-        # logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
-        # exec(checkDIDLenFuncString)
+        # instead of checkDIDLenFunc:
         posResponse = PosResponse(diagCodedType, DIDLength ,diagnosticId)
         logging.info(f"locals()['diagCodedType']: {locals()['diagCodedType']}")
         logging.info(f"locals()['posResponse']: {locals()['posResponse']}")
