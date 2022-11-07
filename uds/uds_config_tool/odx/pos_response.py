@@ -13,7 +13,7 @@ class PosResponse():
     def __init__(self,
         diagCodedType: DiagCodedType,
         didLength: int,
-        DID: int,
+        DID: int
     ) -> None:
         self.diagCodedType = diagCodedType,
         self.didLength = didLength,
@@ -46,7 +46,7 @@ class PosResponse():
 
         return tuple([totalMinLength, totalMaxLength])
 
-    def __str__(self):
+    def __repr__(self):
         return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"
 
     def __str__(self):

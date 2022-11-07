@@ -314,7 +314,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
         # instead of checkDIDLenFunc:
-        posResponse: PosResponse = PosResponse(diagCodedType, DIDLength ,diagnosticId)
+        posResponse: PosResponse = PosResponse(diagCodedType, DIDLength, diagnosticId)
         # logging.info(f"locals()['diagCodedType']: {locals()['diagCodedType']}")
         # logging.info(f"locals()['posResponse']: {locals()['posResponse']}")
         logging.info(f"posResponse: {posResponse}")

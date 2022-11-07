@@ -9,7 +9,7 @@ class DiagCodedType(ABC):
 
     def __init__(
             self,
-            base_data_type: str,
+            base_data_type: str
         ) -> None:
         super().__init__()
         self.base_data_type = base_data_type
@@ -27,7 +27,7 @@ class StandardLengthType(DiagCodedType):
     def __init__(
             self,
             base_data_type: str,
-            bitLength: int,
+            bitLength: int
         ) -> None:
         super().__init__(base_data_type)
         self.bitLength = bitLength
@@ -61,7 +61,7 @@ class MinMaxLengthType(DiagCodedType):
             base_data_type: str,
             minLength: int,
             maxLength: int,
-            termination: str,
+            termination: str
         ) -> None:
         super().__init__(base_data_type)
         self.minLength = minLength
