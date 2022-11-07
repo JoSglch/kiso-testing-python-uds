@@ -41,7 +41,7 @@ class PosResponse():
             if self.diagCodedType.maxLength is not None:
                 totalMaxLength += self.diagCodedType.maxLength
 
-        return (totalMinLength, totalMaxLength)
+        return ([totalMinLength, totalMaxLength])
 
 
     def __str__(self):
