@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import IntEnum
+import logging
 from typing import List
 
 
@@ -28,7 +29,8 @@ class StandardLengthType(DiagCodedType):
     def calculateLength(self, response: List[int]) -> int:
         """Returns the static length of StandardLengthType (excluding DID)
         """
-        print("Calculating length in standardLengthType")
+        logging.info("Calculating length in standardLengthType")
+
         return self.bitLength
 
     def __repr__(self):
@@ -71,20 +73,19 @@ class MinMaxLengthType(DiagCodedType):
         """Returns the dynamically calculated length of MinMaxLengthType from the response list 
         (excluding DID)
         """
-        print("calculating length in minMaxLengthType")
-        print(f"passed response: {response}")
+        logging.info(f"passed response: {response}")
         # TODO: end-of-pdu handling: read till response end
         if self._termination != "END-OF-PDU":
             pass
 
         for dynamicLength, value in enumerate(response):
-            print(f"dynamicLength: {dynamicLength}, value: {value}")
+            logging.info(f"dynamicLength: {dynamicLength}, value: {value}")
 
             if value == self._termination and dynamicLength < self.minLength:
                 raise ValueError(f"Response shorter than expected minimum")
             elif value == self._termination or dynamicLength == self.maxLength:
-                print(f"Found termination char {self._termination} or reached max length {self.maxLength}")
-                print(f"length at end condition: {dynamicLength}\n")
+                logging.info(f"Found termination char {self._termination} or reached max length {self.maxLength}")
+                logging.info(f"length at end condition: {dynamicLength}\n")
                 # TODO: does it ALWAYS have a termination char, even if max length used? -> then need to handle separately:
                 # + 1 for termination char, no + 1 for max length
                 return dynamicLength + 1 # account for termination char with + 1

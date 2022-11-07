@@ -39,7 +39,7 @@ class PosResponse():
         return parsedResponse
 
     def getTotalPossibleLength(self) -> Tuple[int, int]:
-        """Return DIDLength + DATA length
+        """Return DIDLength + DATA length for range of poss byte lengths
         """
         totalMinLength = self.didLength
         totalMaxLength = self.didLength
