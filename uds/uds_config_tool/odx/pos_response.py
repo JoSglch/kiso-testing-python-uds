@@ -1,3 +1,4 @@
+import logging
 from typing import List, Tuple
 
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
@@ -17,6 +18,7 @@ class PosResponse():
         self.diagCodedType = diagCodedType,
         self.didLength = didLength,
         self.DID = DID
+        logging.info(f"self.didLength: {didLength}")
 
     # TODO:
     def parse(self, DIDResponse: List[int]) -> str:
@@ -46,3 +48,5 @@ class PosResponse():
     def __str__(self):
         return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"
 
+    def __str__(self):
+        return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"
