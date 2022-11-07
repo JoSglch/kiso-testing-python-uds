@@ -25,7 +25,7 @@ class StandardLengthType(DiagCodedType):
         super().__init__(base_data_type)
         self.bitLength = bitLength
 
-    def calculateLength(self) -> int:
+    def calculateLength(self, response: List[int]) -> int:
         """Returns the static length of StandardLengthType (excluding DID)
         """
         print("Calculating length in standardLengthType")
