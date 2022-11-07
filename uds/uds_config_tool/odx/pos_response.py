@@ -10,11 +10,7 @@ class PosResponse():
     """encapsulates diagCodedType and DID information for parsing uds response
     """
 
-    def __init__(self,
-        diagCodedType: DiagCodedType,
-        didLength: int,
-        DID: int
-    ) -> None:
+    def __init__(self, diagCodedType: DiagCodedType, didLength: int, DID: int) -> None:
         self.diagCodedType = diagCodedType,
         self.didLength = didLength,
         self.DID = DID
