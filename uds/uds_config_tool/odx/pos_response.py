@@ -43,9 +43,5 @@ class PosResponse():
 
         return tuple([totalMinLength, totalMaxLength])
 
-
-    def __str__(self):
-        pass
-
     def __repr__(self):
         return (f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}")
