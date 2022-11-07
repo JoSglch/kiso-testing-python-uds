@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import List
 
 
 class DiagCodedType(ABC):
     """Base Class for all DIAG-CODED-TYPEs
-
     """
 
     def __init__(
             self,
-            base_data_type: str
+            base_data_type: str,
         ) -> None:
         super().__init__()
         self.base_data_type = base_data_type
@@ -28,13 +27,13 @@ class StandardLengthType(DiagCodedType):
     def __init__(
             self,
             base_data_type: str,
-            bitLength: int
+            bitLength: int,
         ) -> None:
         super().__init__(base_data_type)
         self.bitLength = bitLength
 
     def calculateLength(self) -> int:
-        """Returns the static length of StandardLengthType
+        """Returns the static length of StandardLengthType (excluding DID)
         """
         print("Calculating length in standardLengthType")
         return self.bitLength
@@ -62,7 +61,7 @@ class MinMaxLengthType(DiagCodedType):
             base_data_type: str,
             minLength: int,
             maxLength: int,
-            termination: str
+            termination: str,
         ) -> None:
         super().__init__(base_data_type)
         self.minLength = minLength
@@ -82,7 +81,8 @@ class MinMaxLengthType(DiagCodedType):
 
 
     def calculateLength(self, response: List[int]) -> int:
-        """Returns the dynamically calculated length of MinMaxLengthType from the response list
+        """Returns the dynamically calculated length of MinMaxLengthType from the response list 
+        (excluding DID)
         """
         print("calculating length in minMaxLengthType")
         print(f"passed response: {response}")

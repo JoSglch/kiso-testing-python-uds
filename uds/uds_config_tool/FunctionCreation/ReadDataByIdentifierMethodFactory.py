@@ -19,7 +19,8 @@ from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
 from uds.uds_config_tool.odx.globals import xsi
-from uds.uds_config_tool.UtilityFunctions import findDescendant, getDiagCodedTypeFromDop
+from uds.uds_config_tool.UtilityFunctions import (findDescendant,
+                                                  getDiagCodedTypeFromDop)
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
@@ -309,20 +310,22 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         )  # 3      but look at the DID response as an isolated extracted element.
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
-        # TODO: format in the diagCodedType instead of a length
-        diagCodedTypeString = diagCodedType.__repr__()
-        logging.info(f"Object str to be templated in: {diagCodedType}")
-        checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
-            checkDIDLenFuncName, diagCodedTypeString  # 0
-        )  # 1
-        logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
-        exec(checkDIDLenFuncString)
 
+        # TODO: format in the diagCodedType instead of a length
+        # diagCodedTypeString = diagCodedType.__repr__()
+        # logging.info(f"Object str to be templated in: {diagCodedType}")
+        # checkDIDLenFuncString = checkDIDLenFuncTemplate.format(
+        #     checkDIDLenFuncName, diagCodedTypeString  # 0
+        # )  # 1
+        # logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
+        # exec(checkDIDLenFuncString)
+
+        logging.info(f"locals: {locals()}")
         return (
             locals()[checkSIDRespFuncName],
             locals()[checkSIDLenFuncName],
             locals()[checkDIDRespFuncName],
-            locals()[checkDIDLenFuncName],
+            locals()[diagCodedType],
         )
 
     ##

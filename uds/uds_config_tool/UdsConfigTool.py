@@ -290,6 +290,7 @@ class UdsTool:
                             value, xmlElements
                         )
                     )
+                    logging.info(f"humanName: {humanName}")
                     cls.rdbiContainer.add_requestSIDFunction(
                         requestFunctions[0], humanName
                     )  # ... note: this will now need to handle replication of this one!!!!

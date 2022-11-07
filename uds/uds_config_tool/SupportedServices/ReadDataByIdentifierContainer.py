@@ -54,7 +54,7 @@ class ReadDataByIdentifierContainer(object):
         logging.debug(f"===== readDataByIdentifier({target}, {parameter}) =====")
         # Some local functions to deal with use concatenation of a number of DIDs in RDBI operation ...
 
-        # After an array of lengths has been constructed for the individual response elements, we need a simple function to check it against the response
+        # After an array of length types has been constructed for the individual response elements, we need a simple function to check it against the response
         def checkTotalResponseLength(response: List[int], expectedResponseTypes: List[DiagCodedType]) -> None:
             """Calculates a total minimum and maximum for valid response length range
             """
@@ -63,6 +63,8 @@ class ReadDataByIdentifierContainer(object):
             totalMaxLength = 0
 
             for responseType in expectedResponseTypes:
+                # totalMinLength += responseType.DIDLength
+                # totalMaxLength += responseType.DIDLength
                 if isinstance(responseType, StandardLengthType):
                     totalMinLength += responseType.bitLength
                     totalMaxLength += responseType.bitLength
@@ -128,12 +130,12 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.checkDIDResponseFunctions[did]
             for did in dids
         ]
-        # logging.info(f"checkDIDResponseFunctions: {checkDIDResponseFunctions}")
+        logging.info(f"checkDIDResponseFunctions: {checkDIDResponseFunctions}")
         checkDIDLengthFunctions = [
             target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
             for did in dids
         ]
-        # logging.info(f"checkDIDLengthFunctions: {checkDIDLengthFunctions}")
+        logging.info(f"checkDIDLengthFunctions: {checkDIDLengthFunctions}")
         # This is the same for all RDBI responses, irrespective of list or single input
         negativeResponseFunction = (
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
