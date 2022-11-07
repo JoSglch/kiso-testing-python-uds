@@ -305,7 +305,7 @@ class UdsTool:
                     checkFunctions = ReadDataByIdentifierMethodFactory.create_checkPositiveResponseFunctions(
                         value, xmlElements
                     )
-                    logging.info(f"checkFUnctions in UdsCOnfigTool: {checkFunctions}")
+                    logging.info(f"checkFunctions: {checkFunctions}")
                     cls.rdbiContainer.add_checkSIDResponseFunction(checkFunctions[0], humanName)
                     cls.rdbiContainer.add_checkSIDLengthFunction(checkFunctions[1], humanName)
                     cls.rdbiContainer.add_checkDIDResponseFunction(checkFunctions[2], humanName)
@@ -314,6 +314,7 @@ class UdsTool:
                     positiveResponseFunction = ReadDataByIdentifierMethodFactory.create_encodePositiveResponseFunction(
                         value, xmlElements
                     )
+                    logging.info(f"encodeFunction: {positiveResponseFunction}")
                     cls.rdbiContainer.add_positiveResponseFunction(
                         positiveResponseFunction, humanName
                     )

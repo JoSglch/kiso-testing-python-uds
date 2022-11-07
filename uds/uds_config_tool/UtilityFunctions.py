@@ -1,6 +1,11 @@
 import logging
 from xml.etree.ElementTree import Element as XMLElement
 
+from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
+                                                      MinMaxLengthType,
+                                                      StandardLengthType)
+from uds.uds_config_tool.odx.globals import xsi
+
 
 ##
 # param: a diag service element
@@ -162,7 +167,8 @@ def getDiagObjectProp(paramElement, xmlElements):
     return dopElement
 
 
-def getBitLengthFromDop(diagObjectPropElement):
+def getBitLengthFromDop(diagObjectPropElement: XMLElement):
+
 
     try:
         bitLength = int(
@@ -194,6 +200,44 @@ def findDescendant(name: str, root: XMLElement) -> XMLElement:
             logging.info(f"Reference ID is: {child.attrib['ID-REF']}")
             return child
     return None
+
+
+def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
+    """Parse ODX to get the DIAG CODED TYPE from a DATA OBJECT PROP and create
+    DiagCodedType object containing necessary info to calculate the length of the response
+    """
+    logging.info("DATA OBJECT PROP")
+    diagCodedTypeElement = dataObjectProp.find("DIAG-CODED-TYPE")
+    lengthType = diagCodedTypeElement.get(f"{xsi}type")
+    # TODO: STANDARD LENGTH TYPE DOP
+    if lengthType == "STANDARD-LENGTH-TYPE":
+        logging.info("Standard Length DOP")
+        base_data_type = diagCodedTypeElement.attrib["BASE-DATA-TYPE"]
+        logging.info(f"base data type: {base_data_type}")
+        bitLengthElement = diagCodedTypeElement.find("BIT-LENGTH")
+        bitLength = int(bitLengthElement.text)
+        logging.info(f"bitlength: {bitLength}")
+        byteLength = int(bitLength / 8)
+        diagCodedType = StandardLengthType(base_data_type, byteLength)
+        logging.info(f"Created diagCodedType: {diagCodedType}")
+        return diagCodedType
+    # TODO: MIN-MAX-LENGTH-TYPE DOP
+    elif lengthType == "MIN-MAX-LENGTH-TYPE":
+        logging.info("Min Max Length DOP")
+        minLengthElement = diagCodedTypeElement.find("MIN-LENGTH")
+        maxLengthElement = diagCodedTypeElement.find("MAX-LENGTH")
+        logging.info(f"minLengthElement: {minLengthElement}, maxLengthElement: {maxLengthElement}")
+        minLength = None
+        maxLength = None
+        if minLengthElement is not None:
+            minLength = int(minLengthElement.text)
+        if maxLengthElement is not None:
+            maxLength = int(maxLengthElement.text)
+        logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
+        termination = diagCodedTypeElement.attrib["TERMINATION"]
+        diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
+        logging.info(f"Created diagCodedType: {diagCodedType}")
+        return diagCodedType
 
 
 if __name__ == "__main__":

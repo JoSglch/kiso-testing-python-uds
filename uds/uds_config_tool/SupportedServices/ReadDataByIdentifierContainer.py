@@ -75,7 +75,7 @@ class ReadDataByIdentifierContainer(object):
 
             if len(response) < totalMinLength or len(response) > totalMaxLength:
                 raise ValueError(f"Expected response length range {resultRange} does not match received response length {len(response)}")
-            print(f"Check passed, response length = {len(response)}, possible range = {resultRange}\n")
+            logging.info(f"Check passed, response length = {len(response)}, possible range = {resultRange}\n")
 
         # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
         def popResponseElement(input, expectedResponseList: List[DiagCodedType]):
@@ -180,7 +180,7 @@ class ReadDataByIdentifierContainer(object):
         checkTotalResponseLength(responseRemaining, expectedResponseTypes)
         checkSIDResponseFunction(SIDResponseComponent)
         # We've passed the length check, so check each element (which has to be present if the length is ok) ...
-        expectedResponses = expectedResponseTypes[:]
+        expectedResponses = expectedResponseTypes[:]  # copy
 
         DIDresponses = []
         for i in range(len(expectedResponseTypes)):
