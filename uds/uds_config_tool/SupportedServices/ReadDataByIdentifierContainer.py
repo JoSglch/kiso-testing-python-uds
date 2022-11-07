@@ -172,9 +172,7 @@ class ReadDataByIdentifierContainer(object):
         expectedResponseTypes: List[DiagCodedType] = []
         #TODO: get length via objects in the list
         logging.info(f"checkDIDLenFunctions: {checkDIDLengthFunctions}")
-        expectedResponseTypes += [
-            checkDIDLengthFunctions[i]() for i in range(len(checkDIDLengthFunctions))
-        ]
+        expectedResponseTypes = checkDIDLengthFunctions
         logging.info(f"expectedResponseTypes: {expectedResponseTypes}")
 
         SIDResponseComponent = response[:SIDLength]

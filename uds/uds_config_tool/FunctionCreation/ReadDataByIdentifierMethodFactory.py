@@ -320,7 +320,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         # logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
         # exec(checkDIDLenFuncString)
 
-        logging.info(f"locals: {locals()['diagCodedType']}")
+        logging.info(f"locals()['diagCodedType']: {locals()['diagCodedType']}")
         return (
             locals()[checkSIDRespFuncName],
             locals()[checkSIDLenFuncName],
