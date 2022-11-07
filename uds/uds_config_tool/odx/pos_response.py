@@ -11,8 +11,8 @@ class PosResponse():
     """
 
     def __init__(self, diagCodedType: DiagCodedType, didLength: int, DID: int) -> None:
-        self.diagCodedType = diagCodedType,
-        self.didLength = didLength,
+        self.diagCodedType = diagCodedType
+        self.didLength = didLength
         self.DID = DID
         logging.info(f"self.didLength: {self.didLength}")
         logging.info(f"self.diagCodedType: {self.diagCodedType}")
