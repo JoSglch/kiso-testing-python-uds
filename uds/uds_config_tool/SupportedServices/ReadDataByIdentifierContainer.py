@@ -17,8 +17,8 @@ from typing import List
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
-from uds.uds_config_tool.SupportedServices.iContainer import iContainer
 from uds.uds_config_tool.odx.pos_response import PosResponse
+from uds.uds_config_tool.SupportedServices.iContainer import iContainer
 
 
 class ReadDataByIdentifierContainer(object):
@@ -81,7 +81,7 @@ class ReadDataByIdentifierContainer(object):
             logging.info(f"Check passed, response length = {len(response)}, possible range = {resultRange}\n")
 
         # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
-        def popResponseElement(input, expectedResponseList: List[DiagCodedType]):
+        def popResponseElement(input, expectedResponseList: List[PosResponse]):
             """parses the response into components for each DID
             """
             if expectedResponseList == []:
@@ -90,7 +90,7 @@ class ReadDataByIdentifierContainer(object):
                 )
             result = None
             # take the next responseType and calculate its length in the response
-            responseType: DiagCodedType = expectedResponseList[0]
+            responseType: DiagCodedType = expectedResponseList[0].diagCodedType
             length = responseType.calculateLength(input)
             # logging.info(f"calculated length: {length}")
             DIDResponseComponent = input[: length]
