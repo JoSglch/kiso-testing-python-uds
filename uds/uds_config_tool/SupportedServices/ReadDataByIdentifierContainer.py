@@ -91,10 +91,11 @@ class ReadDataByIdentifierContainer(object):
             result = None
             # take the next responseType and calculate its length in the response
             responseType: DiagCodedType = expectedResponseList[0].diagCodedType
-            length = responseType.calculateLength(input)
-            # logging.info(f"calculated length: {length}")
+            # DIDLength + DATA type length
+            length = responseType.calculateLength(input) + expectedResponseList[0].didLength
+            logging.info(f"calculated length: {length}")
             DIDResponseComponent = input[: length]
-            # logging.info(f"calculated response comp: {DIDResponseComponent}\n")
+            logging.info(f"calculated response comp: {DIDResponseComponent}\n")
 
             result = (
                 DIDResponseComponent,
