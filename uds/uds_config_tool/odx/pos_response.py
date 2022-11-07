@@ -18,7 +18,8 @@ class PosResponse():
         self.diagCodedType = diagCodedType,
         self.didLength = didLength,
         self.DID = DID
-        logging.info(f"self.didLength: {didLength}")
+        logging.info(f"self.didLength: {self.didLength}")
+        logging.info(f"self.diagCodedType: {self.diagCodedType}")
 
     # TODO:
     def parse(self, DIDResponse: List[int]) -> str:
