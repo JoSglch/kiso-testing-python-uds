@@ -321,7 +321,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
             locals()[checkSIDRespFuncName],
             locals()[checkSIDLenFuncName],
             locals()[checkDIDRespFuncName],
-            locals()['posResponse'],
+            posResponse,
         )
 
     ##
