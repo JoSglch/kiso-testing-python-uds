@@ -86,7 +86,7 @@ class MinMaxLengthType(DiagCodedType):
         """
         print("calculating length in minMaxLengthType")
         print(f"passed response: {response}")
-        # end-of-pdu handling
+        # TODO: end-of-pdu handling: read till response end
         if self._termination != "END-OF-PDU":
             pass
 

@@ -21,6 +21,7 @@ from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
 from uds.uds_config_tool.odx.globals import xsi
 from uds.uds_config_tool.UtilityFunctions import (findDescendant,
                                                   getDiagCodedTypeFromDop)
+from uds.uds_config_tool.odx.pos_response import PosResponse
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
@@ -147,6 +148,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
         totalLength = 0
         SIDLength = 0
+        DIDLength = None
         diagCodedType: DiagCodedType = None
 
         for param in paramsElement:
@@ -178,6 +180,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     listLength = int(bitLength / 8)
+                    DIDLength = listLength
                     diagnosticIdStart = startByte
                     diagnosticIdEnd = startByte + listLength
                     totalLength += listLength
@@ -319,13 +322,14 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         # )  # 1
         # logging.info(f"checkDIDLenFuncString {checkDIDLenFuncString}")
         # exec(checkDIDLenFuncString)
-
+        posResponse = PosResponse(diagCodedType, DIDLength ,diagnosticId)
         logging.info(f"locals()['diagCodedType']: {locals()['diagCodedType']}")
+        logging.info(f"locals()['posResponse']: {locals()['posResponse']}")
         return (
             locals()[checkSIDRespFuncName],
             locals()[checkSIDLenFuncName],
             locals()[checkDIDRespFuncName],
-            locals()['diagCodedType'],
+            locals()['posResponse'],
         )
 
     ##
