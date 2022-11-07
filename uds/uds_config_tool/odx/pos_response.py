@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
@@ -26,7 +26,7 @@ class PosResponse():
         parsedResponse = self.diagCodedType.parse(toParse)
         return parsedResponse
 
-    def getTotalPossibleLength(self) -> tuple(int, int):
+    def getTotalPossibleLength(self) -> Tuple(int, int):
         """Return DIDLength + DATA length
         """
         totalMinLength = self.didLength
