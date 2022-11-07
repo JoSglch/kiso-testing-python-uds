@@ -26,7 +26,7 @@ class PosResponse():
         parsedResponse = self.diagCodedType.parse(toParse)
         return parsedResponse
 
-    def getTotalPossibleLength(self) -> Tuple(int, int):
+    def getTotalPossibleLength(self) -> Tuple[int, int]:
         """Return DIDLength + DATA length
         """
         totalMinLength = self.didLength
