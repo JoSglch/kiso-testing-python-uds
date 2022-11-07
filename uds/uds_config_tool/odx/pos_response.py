@@ -1,6 +1,7 @@
 import logging
 from typing import List, Tuple
 
+from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
@@ -21,8 +22,20 @@ class PosResponse():
     def parse(self, DIDResponse: List[int]) -> str:
         """Parse a (partial) response of a DID
         """
-        toParse = DIDResponse[self.didLength:]
-        parsedResponse = self.diagCodedType.parse(toParse)
+        # remove the did before parsing -> insert DID check here?
+        toParse = DIDResponse[self.didLength: ]
+        # remove termination char if exists:
+        if isinstance(self.diagCodedType, MinMaxLengthType):
+            toParse = toParse[ :-1]
+        encodingType = self.diagCodedType.base_data_type
+        if encodingType == "A_ASCIISTRING":
+            logging.info(f"Trying to decode A_ASCIISTRING:")
+            parsedResponse = DecodeFunctions.intListToString(toParse, None)
+        elif encodingType == "A_UINT32":
+            logging.info(f"Trying to decode A_UINT32:")
+        else:
+            logging.info(f"Trying to decode another encoding type:")
+
         return parsedResponse
 
     def getTotalPossibleLength(self) -> Tuple[int, int]:

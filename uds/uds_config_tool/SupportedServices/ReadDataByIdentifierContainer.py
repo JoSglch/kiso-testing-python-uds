@@ -198,10 +198,16 @@ class ReadDataByIdentifierContainer(object):
         logging.info(f"----- Start response decoding")
         returnValue = tuple(
             [
-                positiveResponseFunctions[i](DIDresponses[i], SIDLength)
+                checkDIDLengthFunctions[i].parse(DIDresponses[i])
                 for i in range(len(DIDresponses))
             ]
         )
+        # returnValue = tuple(
+        #     [
+        #         positiveResponseFunctions[i](DIDresponses[i], SIDLength)
+        #         for i in range(len(DIDresponses))
+        #     ]
+        # )
         if len(returnValue) == 1:
             returnValue = returnValue[
                 0
