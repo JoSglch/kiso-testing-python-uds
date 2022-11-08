@@ -18,11 +18,11 @@ class PosResponse():
 
     # TODO:
     def parse(self, DIDResponse: List[int]) -> str:
-        """Parse a (partial) response of a DID
+        """Parse a response to a DID
         """
-        # remove the did before parsing -> insert DID check here?
+        # remove the did before parsing -> TODO: insert DID check here?
         toParse = DIDResponse[self.didLength: ]
-        # remove termination char if exists:
+        # remove termination char if exists (assume it always exists):
         if isinstance(self.diagCodedType, MinMaxLengthType):
             toParse = toParse[ :-1]
         encodingType = self.diagCodedType.base_data_type
@@ -31,8 +31,10 @@ class PosResponse():
             parsedResponse = DecodeFunctions.intListToString(toParse, None)
         elif encodingType == "A_UINT32":
             logging.info(f"Trying to decode A_UINT32:")
+            parsedResponse = toParse
         else:
             logging.info(f"Trying to decode another encoding type:")
+            parsedResponse = toParse
 
         return parsedResponse
 
