@@ -18,7 +18,7 @@ class PosResponse():
         self.sidLength = sidLength
         self.SID = SID
 
-    # TODO:
+
     def parse(self, DIDResponse: List[int]) -> str:
         """Parse a response to a DID
         """
@@ -40,6 +40,7 @@ class PosResponse():
 
         return parsedResponse
 
+
     def getTotalPossibleLength(self) -> Tuple[int, int]:
         """Return DIDLength + DATA length for range of poss byte lengths
         """
@@ -57,19 +58,19 @@ class PosResponse():
 
         return tuple([totalMinLength, totalMaxLength])
 
+
     def checkDID(self, didResponse: List[int]) -> None:
         logging.info(f"Check beginning of passed response for DID")
         actualDID = DecodeFunctions.buildIntFromList(didResponse[:self.didLength])
         if self.DID != actualDID:
             raise AttributeError(f"The expected DID {self.DID} does not match the received SID {actualDID}")
 
+
     def checkSID(self, response: List[int]) -> None:
         actualSID = DecodeFunctions.buildIntFromList(response[:self.sidLength])
         if self.SID != actualSID:
             raise AttributeError(f"The expected SID {self.SID} does not match the received SID {actualSID}")
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"
 
-    def __str__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"

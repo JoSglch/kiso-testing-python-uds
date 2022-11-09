@@ -1,6 +1,6 @@
+import logging
 from abc import ABC, abstractmethod
 from enum import IntEnum
-import logging
 from typing import List
 
 
@@ -34,9 +34,6 @@ class StandardLengthType(DiagCodedType):
         return self.bitLength
 
     def __repr__(self):
-        return f"{self.__class__.__name__}('{self.base_data_type}',{self.bitLength})"
-
-    def __str__(self) -> str:
         return f"{self.__class__.__name__}: base-data-type={self.base_data_type} length={self.bitLength}"
 
 
@@ -93,8 +90,4 @@ class MinMaxLengthType(DiagCodedType):
                 raise ValueError(f"Response longer than expected max length")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}('{self.base_data_type}', {self.minLength}, {self.maxLength}, {self._termination})"
-
-    def __str__(self):
         return f"{self.__class__.__name__}: base-data-type={self.base_data_type}, min={self.minLength}, max={self.maxLength}, termination={self._termination}"
-
