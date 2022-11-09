@@ -20,7 +20,7 @@ from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       StandardLengthType)
 from uds.uds_config_tool.odx.globals import xsi
 from uds.uds_config_tool.UtilityFunctions import (findDescendant,
-                                                  getDiagCodedTypeFromDop)
+                                                  getDiagCodedTypeFromDop, getDiagCodedTypeFromStructure)
 from uds.uds_config_tool.odx.pos_response import PosResponse
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
@@ -188,61 +188,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         diagCodedType = getDiagCodedTypeFromDop(dataObjectElement)
 
                     elif dataObjectElement.tag == "STRUCTURE":
-                        logging.info("STRUCTURE")
-                        # TODO: STATIC STRUCTURE
-                        byteSizeElement = dataObjectElement.find("BYTE-SIZE")
-                        if dataObjectElement.find("BYTE-SIZE") is not None:
-                            logging.info(f"Static Length Structure...")
-                            byteLength = int(byteSizeElement.text)
-                            # get decoding info from first DOP, assume same decoding for each param
-                            dop = xmlElements[
-                                findDescendant("DOP-REF", dataObjectElement).attrib["ID-REF"]
-                            ]
-                            base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
-                            logging.info(f"base data type: {base_data_type}")
-                            diagCodedType = StandardLengthType(base_data_type, byteLength)
-                            logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
-                        # TODO: DYNAMIC STRUCTURE
-                        else:
-                            logging.info(f"Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
-                            dopRef = findDescendant("DOP-REF", dataObjectElement)
-                            if dopRef is None:
-                                raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
-
-                            nestedDop = xmlElements[dopRef.attrib["ID-REF"]]
-                            logging.info(f"dopRef= {dopRef}, dop= {nestedDop}")
-
-                            logging.info("DATA OBJECT PROP from STRUCTURE...")
-                            # TODO: STATIC DOP
-                            base_data_type = nestedDop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
-                            logging.info(f"base data type: {base_data_type}")
-                            bitLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("BIT-LENGTH")
-                            if bitLengthElement is not None:
-                                logging.info("Static Length DOP...")
-                                bitLength = int(bitLengthElement.text)
-                                logging.info(f"bitlength: {bitLength}")
-                                byteLength = int(bitLength / 8)
-                                diagCodedType = StandardLengthType(base_data_type, byteLength)
-                                logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
-                            elif nestedDop.tag == "END-OF-PDU-FIELD":
-                                # TODO: handle END-OF-PDU-FIELD
-                                logging.warning(f"Found END-OF-PDU-FIELD")
-                            # TODO: DYNAMIC DOP
-                            else:
-                                logging.info("Dynamic Length DOP...")
-                                minLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("MIN-LENGTH")
-                                maxLengthElement = nestedDop.find("DIAG-CODED-TYPE").find("MAX-LENGTH")
-                                logging.info(f"minLengthElement: {minLengthElement}, maxLengthElement: {maxLengthElement}")
-                                minLength = None
-                                maxLength = None
-                                if minLengthElement is not None:
-                                    minLength = int(minLengthElement.text)
-                                if maxLengthElement is not None:
-                                    maxLength = int(maxLengthElement.text)
-                                logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
-                                termination = nestedDop.find("DIAG-CODED-TYPE").attrib["TERMINATION"]
-                                diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
-                                logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
+                        diagCodedType = getDiagCodedTypeFromStructure(dataObjectElement, xmlElements)
 
                     else:
                         # neither DOP nor STRUCTURE
@@ -276,10 +222,9 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         )  # 3      but look at the DID response as an isolated extracted element.
         logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
         exec(checkDIDRespFuncString)
-        # instead of checkDIDLenFunc:
-        logging.info(f"diagCodedType: {type(diagCodedType)}, ")
-        posResponse: PosResponse = PosResponse(diagCodedType, DIDLength, diagnosticId)
-        logging.info(f"posResponse: {posResponse}, type: {type(posResponse)}")
+        # instead of checkDIDLenFunc (also can get rid of other check functions):
+        posResponse = PosResponse(diagCodedType, DIDLength, diagnosticId, SIDLength, responseId)
+        logging.info(f"posResponse: {posResponse}")
         return (
             locals()[checkSIDRespFuncName],
             locals()[checkSIDLenFuncName],

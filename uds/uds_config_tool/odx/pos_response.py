@@ -11,10 +11,12 @@ class PosResponse():
     """encapsulates diagCodedType and DID information for parsing uds response
     """
 
-    def __init__(self, diagCodedType: DiagCodedType, didLength: int, DID: int) -> None:
+    def __init__(self, diagCodedType: DiagCodedType, didLength: int, DID: int, sidLength: int, SID: int) -> None:
         self.diagCodedType = diagCodedType
         self.didLength = didLength
         self.DID = DID
+        self.sidLength = sidLength
+        self.SID = SID
 
     # TODO:
     def parse(self, DIDResponse: List[int]) -> str:
@@ -55,10 +57,15 @@ class PosResponse():
 
         return tuple([totalMinLength, totalMaxLength])
 
-    def checkDID(self, didResponse: List[int]):
+    def checkDID(self, didResponse: List[int]) -> None:
         actualDID = DecodeFunctions.buildIntFromList(didResponse[:self.didLength])
         if self.DID != actualDID:
-            raise AttributeError(f"Found DID {actualDID} not expected {self.DID}")
+            raise AttributeError(f"The expected DID {self.DID} does not match the received SID {actualDID}")
+
+    def checkSID(self, response: List[int]) -> None:
+        actualSID = DecodeFunctions.buildIntFromList(response)
+        if self.SID != actualSID:
+            raise AttributeError(f"The expected SID {self.SID} does not match the received SID {actualSID}")
 
     def __repr__(self):
         return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"

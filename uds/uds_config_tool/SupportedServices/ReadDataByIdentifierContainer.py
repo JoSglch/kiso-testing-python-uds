@@ -132,12 +132,12 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.checkDIDResponseFunctions[did]
             for did in dids
         ]
-        logging.info(f"checkDIDResponseFunctions: {checkDIDResponseFunctions}")
-        checkDIDLengthFunctions = [
+        logging.info(f"checkDIDResponseFunctions per did: {checkDIDResponseFunctions}")
+        expectedResponseTypes: List[PosResponse] = [
             target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
             for did in dids
         ]
-        logging.info(f"checkDIDLengthFunctions: {checkDIDLengthFunctions}")
+        logging.info(f"expectedResponseTypes per did: {expectedResponses}")
         # This is the same for all RDBI responses, irrespective of list or single input
         negativeResponseFunction = (
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
@@ -148,7 +148,7 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.positiveResponseFunctions[did]
             for did in dids
         ]
-        logging.info(f"positiveResponseFunctions: {positiveResponseFunctions}")
+        logging.info(f"positiveResponseFunctions per did: {positiveResponseFunctions}")
         # Call the sequence of functions to execute the RDBI request/response action ...
         # ==============================================================================
 
@@ -169,22 +169,19 @@ class ReadDataByIdentifierContainer(object):
             return negativeResponse
         logging.info(f"----- Start response parsing")
         # We have a positive response so check that it makes sense to us ...
-        SIDLength = checkSIDLengthFunction()
-        logging.info(f"SIDLength: {SIDLength}")
-        expectedResponseTypes: List[PosResponse] = []
-        #TODO: get length via objects in the list
-        logging.info(f"checkDIDLenFunctions: {checkDIDLengthFunctions}")
-        expectedResponseTypes = checkDIDLengthFunctions
-        logging.info(f"expectedResponseTypes: {expectedResponseTypes}")
 
-        SIDResponseComponent = response[:SIDLength]
+        # Check SID and take it from first expected response (they all have the same)
+        expectedResponseTypes[0].checkSID(response)
+        SIDLength = expectedResponseTypes[0].sidLength
+        logging.info(f"SIDLength: {SIDLength}")
+        # remove sid from response for further parsing the did responses
         responseRemaining = response[SIDLength:]
         checkTotalResponseLength(responseRemaining, expectedResponseTypes)
-        checkSIDResponseFunction(SIDResponseComponent)
+
         # We've passed the length check, so check each element (which has to be present if the length is ok) ...
         expectedResponses = expectedResponseTypes[:]  # copy
 
-        DIDresponses = []
+        DIDresponses: List[List[int]] = []
         for i in range(len(expectedResponseTypes)):
             (
                 DIDResponseComponent,
@@ -194,21 +191,16 @@ class ReadDataByIdentifierContainer(object):
             DIDresponses.append(DIDResponseComponent)
             # TODO: call a check function on the object
             checkDIDResponseFunctions[i](DIDResponseComponent)
-        logging.info(f"DIDResponses: {DIDresponses}")
+        logging.info(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...
         logging.info(f"----- Start response decoding")
         returnValue = tuple(
             [
-                checkDIDLengthFunctions[i].parse(DIDresponses[i])
+                expectedResponseTypes[i].parse(DIDresponses[i])
                 for i in range(len(DIDresponses))
             ]
         )
-        # returnValue = tuple(
-        #     [
-        #         positiveResponseFunctions[i](DIDresponses[i], SIDLength)
-        #         for i in range(len(DIDresponses))
-        #     ]
-        # )
+
         if len(returnValue) == 1:
             returnValue = returnValue[
                 0

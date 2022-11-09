@@ -260,18 +260,17 @@ def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, 
         dopRef = findDescendant("DOP-REF", structure)
         if dopRef is None:
             raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
-
         nestedDop = xmlElements[dopRef.attrib["ID-REF"]]
         logging.info(f"dopRef= {dopRef}, dop= {nestedDop}")
         logging.info("Nested DOP from STRUCTURE:")
-        # DOP
         if nestedDop.tag == "DATA-OBJECT-PROP":
             diagCodedType = getDiagCodedTypeFromDop(nestedDop)
         elif nestedDop.tag == "END-OF-PDU-FIELD":
             # TODO: handle END-OF-PDU-FIELD?
             logging.warning(f"Found END-OF-PDU-FIELD")
         else:
-            # TODO: nested structure, not sure if possible?
+            # nested structure (if possible in ODX spec)
+            # TODO: recursively check structure getDiagCodedTypeFromStructure(nestedDop, xmlElements)
             raise NotImplementedError(f"parsing of {nestedDop.tag} is not implemented")
     return diagCodedType
 
