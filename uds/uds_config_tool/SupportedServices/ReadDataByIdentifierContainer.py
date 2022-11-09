@@ -179,7 +179,7 @@ class ReadDataByIdentifierContainer(object):
                 expectedResponses,
             ) = popResponseElement(responseRemaining, expectedResponses)
             # TODO: call DID check function on the object
-            expectedResponseTypes[i](DIDResponseComponent)
+            expectedResponseTypes[i].checkDID(DIDResponseComponent)
             DIDresponses.append(DIDResponseComponent)
         logging.info(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...
