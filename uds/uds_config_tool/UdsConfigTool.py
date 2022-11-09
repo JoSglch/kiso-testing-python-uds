@@ -277,14 +277,6 @@ class UdsTool:
                     logging.info(f"posResponseObject: {posResponse}")
                     cls.rdbiContainer.add_posResponseObject(posResponse, humanName)
 
-                    positiveResponseFunction = ReadDataByIdentifierMethodFactory.create_encodePositiveResponseFunction(
-                        value, xmlElements
-                    )
-                    logging.info(f"encodeFunction: {positiveResponseFunction}")
-                    cls.rdbiContainer.add_positiveResponseFunction(
-                        positiveResponseFunction, humanName
-                    )
-
                     if cls.rdbiContainer not in UdsContainerAccess.containers:
                         UdsContainerAccess.containers.append(cls.rdbiContainer)
 

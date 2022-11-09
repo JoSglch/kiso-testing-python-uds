@@ -36,15 +36,9 @@ class ReadDataByIdentifierContainer(object):
         self.requestSIDFunctions = {}
         self.requestDIDFunctions = {}
 
-        # self.checkFunctions = {}
-        self.checkSIDResponseFunctions = {}
-        self.checkSIDLengthFunctions = {}
-        self.checkDIDResponseFunctions = {}
-        self.checkDIDLengthFunctions = {}
+        self.posResponseObjects = {}
 
         self.negativeResponseFunctions = {}
-
-        self.positiveResponseFunctions = {}
 
     ##
     # @brief this method is bound to an external Uds object so that it call be called
@@ -209,19 +203,16 @@ class ReadDataByIdentifierContainer(object):
         self.requestDIDFunctions[dictionaryEntry] = aFunction
 
     ##
-    # @brief method to add function to container - checkDIDLengthFunction handles return of the expected DID details length
+    # @brief method to add object to container
+    # handles return of the expected DID details length and the extraction of any
+    # DID details in the response message fragment for the DID that require return
     def add_posResponseObject(self, aObject: PosResponse, dictionaryEntry: str):
-        self.checkDIDLengthFunctions[dictionaryEntry] = aObject
+        self.posResponseObjects[dictionaryEntry] = aObject
 
     ##
     # @brief method to add function to container - negativeResponseFunction handles the checking of all possible negative response codes in the response message, raising the required exception
     def add_negativeResponseFunction(self, aFunction, dictionaryEntry):
         self.negativeResponseFunctions[dictionaryEntry] = aFunction
-
-    ##
-    # @brief method to add function to container - positiveResponseFunction handles the extraction of any DID details in the response message fragment forthe DID that require return
-    def add_positiveResponseFunction(self, aFunction, dictionaryEntry):
-        self.positiveResponseFunctions[dictionaryEntry] = aFunction
 
 
 if __name__ == "__main__":

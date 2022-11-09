@@ -40,21 +40,6 @@ negativeResponseFuncTemplate = str(
     "    return result"
 )
 
-encodePositiveResponseFuncTemplate = str(
-    "def {0}(input,offset):\n"
-    "    logging.info('encodePositiveResponseFunction called')\n"
-    "    result = {{}}\n"
-    "    logging.info('{0}')\n"
-    "    logging.info('input:')\n"
-    "    logging.info(input)\n"
-    "    logging.info('offset:')\n"
-    "    logging.info(offset)\n"
-    "    {1}\n"
-    "    logging.info('result:')\n"
-    "    logging.info(result)\n"
-    "    return result"
-)
-
 
 ##
 # @brief this should be static
@@ -179,79 +164,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         logging.info(f"posResponse: {posResponse}")
         return posResponse
 
-    ##
-    # @brief may need refactoring to deal with multiple positive-responses (WIP)
-    @staticmethod
-    def create_encodePositiveResponseFunction(diagServiceElement, xmlElements):
-        logging.info("----- create_encodePositiveResponseFunction() -----")
-        positiveResponseElement = xmlElements[
-            (diagServiceElement.find("POS-RESPONSE-REFS"))
-            .find("POS-RESPONSE-REF")
-            .attrib["ID-REF"]
-        ]
-
-        shortName = diagServiceElement.find("SHORT-NAME").text
-        encodePositiveResponseFunctionName = "encode_{0}".format(shortName)
-        logging.info(f"{shortName}")
-        params = positiveResponseElement.find("PARAMS")
-
-        encodeFunctions = []
-
-        for param in params:
-            try:
-                semantic = None
-                try:
-                    semantic = param.attrib["SEMANTIC"]
-                except AttributeError:
-                    pass
-
-                if semantic == "DATA":
-                    logging.info("PARAM: DATA")
-                    dataObjectElement = xmlElements[
-                        (param.find("DOP-REF")).attrib["ID-REF"]
-                    ]
-                    longName = param.find("LONG-NAME").text
-                    logging.info(f"DOP: {longName}")
-                    bytePosition = int(param.find("BYTE-POSITION").text)
-                    bitLength = int(
-                        dataObjectElement.find("DIAG-CODED-TYPE")
-                        .find("BIT-LENGTH")
-                        .text
-                    )
-                    logging.info(f"bitLength: {bitLength}")
-                    listLength = int(bitLength / 8)
-                    logging.info(f"listLength: {listLength}")
-                    endPosition = bytePosition + listLength
-                    logging.info(f"endPosition: {endPosition}")
-                    encodingType = dataObjectElement.find("DIAG-CODED-TYPE").attrib[
-                        "BASE-DATA-TYPE"
-                    ]
-                    if (encodingType) == "A_ASCIISTRING":
-                        functionString = "DecodeFunctions.intListToString(input[{0}-offset:{1}-offset], None)".format(
-                            bytePosition, endPosition
-                        )
-                    elif encodingType == "A_UINT32":
-                        functionString = "input[{1}-offset:{2}-offset]".format(
-                            longName, bytePosition, endPosition
-                        )
-                    else:
-                        functionString = "input[{1}-offset:{2}-offset]".format(
-                            longName, bytePosition, endPosition
-                        )
-                    logging.info(f"functionString: {functionString}")
-                    encodeFunctions.append(
-                        "result['{0}'] = {1}".format(longName, functionString)
-                    )
-            except:
-                logging.warning(sys.exc_info())
-                pass
-
-        encodeFunctionString = encodePositiveResponseFuncTemplate.format(
-            encodePositiveResponseFunctionName, "\n    ".join(encodeFunctions)
-        )
-        logging.info(f"Complete encodeFunctionString: {encodeFunctionString}")
-        exec(encodeFunctionString)
-        return locals()[encodePositiveResponseFunctionName]
 
     @staticmethod
     def create_checkNegativeResponseFunction(diagServiceElement, xmlElements):
