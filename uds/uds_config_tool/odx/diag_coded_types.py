@@ -67,7 +67,7 @@ class MinMaxLengthType(DiagCodedType):
 
 
     def calculateLength(self, response: List[int]) -> int:
-        """Returns the dynamically calculated length of MinMaxLengthType from the response list 
+        """Returns the dynamically calculated length of MinMaxLengthType from the response
         (excluding DID)
         """
         logging.info(f"passed response: {response}")
@@ -82,7 +82,7 @@ class MinMaxLengthType(DiagCodedType):
                 raise ValueError(f"Response shorter than expected minimum")
             elif value == self._termination or dynamicLength == self.maxLength:
                 logging.info(f"Found termination char {self._termination} or reached max length {self.maxLength}")
-                logging.info(f"length at end condition: {dynamicLength}\n")
+                logging.info(f"Length at end condition: {dynamicLength}")
                 # TODO: does it ALWAYS have a termination char, even if max length used? -> then need to handle separately:
                 # + 1 for termination char, no + 1 for max length
                 return dynamicLength + 1 # account for termination char with + 1

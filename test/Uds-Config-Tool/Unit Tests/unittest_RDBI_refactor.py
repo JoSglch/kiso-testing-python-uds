@@ -4,14 +4,14 @@ from unittest import mock
 
 from uds.config import Config
 from uds.uds_communications.Uds.Uds import Uds
+from uds.uds_config_tool.SupportedServices.ReadDataByIdentifierContainer import ReadDataByIdentifierContainer
 from uds.uds_config_tool.UdsConfigTool import UdsTool
 
 
 class RDBIRefactorTest(unittest.TestCase):
 
-    @mock.patch("uds.uds_communications.TransportProtocols.Can.CanTp.send")
-    @mock.patch("uds.uds_communications.TransportProtocols.Can.CanTp.recv")
-    def test_RDBI(self, tp_recv, tp_send):
+    @mock.patch("uds.uds_communications.TransportProtocols.Can.CanTp")
+    def test_RDBI(self, MockTp):
 
         here = Path(__file__).parent
         filename = "Bootloader.odx"
@@ -36,17 +36,12 @@ class RDBIRefactorTest(unittest.TestCase):
         Config.load_com_layer_config(DEFAULT_TP_CONFIG, DEFAULT_UDS_CONFIG)
         uds = Uds(filepath)
 
-        b = uds.readDataByIdentifier(
-            ["ECU Serial Number", "Boot Software Identification"]
-        )
+        self.assertIsNotNone(uds)
         self.assertIsInstance(uds, Uds)
 
-        tp_send.return_value = False
-        tp_recv.return_value = [0x62, 0xF1, 0x8C, 0xF1, 0x80]
+        MockTp.send.return_value = False
         # ECU Serial Number = "ABC0011223344556"   (16 bytes as specified in "_Bootloader_87")
-        # numberOfModules = 0x01   (1 bytes as specified in "_Bootloader_1")
-        # Boot Software Identification = "SwId12345678901234567890"   (24 bytes as specified in "_Bootloader_71")
-        tp_recv.return_value = [
+        MockTp.recv.return_value = [
             0x62,
             0xF1,
             0x8C,
@@ -66,47 +61,10 @@ class RDBIRefactorTest(unittest.TestCase):
             0x35,
             0x35,
             0x36,
-            0xF1,
-            0x80,
-            0x01,
-            0x53,
-            0x77,
-            0x49,
-            0x64,
-            0x31,
-            0x32,
-            0x33,
-            0x34,
-            0x35,
-            0x36,
-            0x37,
-            0x38,
-            0x39,
-            0x30,
-            0x31,
-            0x32,
-            0x33,
-            0x34,
-            0x35,
-            0x36,
-            0x37,
-            0x38,
-            0x39,
-            0x30,
         ]
 
+        b = uds.readDataByIdentifier(uds, "ECU Serial Number")
 
-        tp_send.assert_called_with([0x22, 0xF1, 0x8C, 0xF1, 0x80], False)
-        self.assertEqual(
-            (
-                {"ECU Serial Number": "ABC0011223344556"},
-                {
-                    "Boot Software Identification": "SwId12345678901234567890",
-                    "numberOfModules": [0x01],
-                },
-            ),
-            b,
-        )
 
 
 if __name__ == '__main__':

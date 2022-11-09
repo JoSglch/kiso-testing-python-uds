@@ -15,9 +15,7 @@ import sys
 from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.FunctionCreation.iServiceMethodFactory import \
     IServiceMethodFactory
-from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
-                                                      MinMaxLengthType,
-                                                      StandardLengthType)
+from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType)
 from uds.uds_config_tool.odx.globals import xsi
 from uds.uds_config_tool.odx.pos_response import PosResponse
 from uds.uds_config_tool.UtilityFunctions import (
@@ -115,8 +113,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     bitLength = int(
                         (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
-                    listLength = int(bitLength / 8)
-                    SIDLength = listLength
+                    SIDLength = int(bitLength / 8)
                     logging.info(f"SIDLength: {SIDLength}")
                 elif semantic == "ID":
                     logging.info("PARAM: ID")
@@ -124,8 +121,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     bitLength = int(
                         (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
-                    listLength = int(bitLength / 8)
-                    DIDLength = listLength
+                    DIDLength = int(bitLength / 8)
                     logging.info(f"DIDLength: {DIDLength}")
                 elif semantic == "DATA":
                     # TODO: create the diagCodedType in this condition
@@ -134,12 +130,9 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         (param.find("DOP-REF")).attrib["ID-REF"]
                     ]
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
-                        # TODO: DOP handling
                         diagCodedType = getDiagCodedTypeFromDop(dataObjectElement)
-
                     elif dataObjectElement.tag == "STRUCTURE":
                         diagCodedType = getDiagCodedTypeFromStructure(dataObjectElement, xmlElements)
-
                     else:
                         # neither DOP nor STRUCTURE
                         pass
