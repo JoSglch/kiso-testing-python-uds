@@ -194,7 +194,7 @@ def isDiagServiceTransmissionOnly(diagServiceElement):
 
 def findDescendant(name: str, root: XMLElement) -> XMLElement:
     """Search for an element in all descendants of an element by tag name, returns first instance"""
-    logging.info(f"\nSearching for {name} in {root} ({(root.find('SHORT-NAME')).text})")
+    logging.info(f"\nSearch {name} in {root} ({(root.find('SHORT-NAME')).text})")
     for child in root.iter():
         if child.tag == name:
             logging.info(f"Found child: {child}")
@@ -206,6 +206,7 @@ def findDescendant(name: str, root: XMLElement) -> XMLElement:
 def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
     """Parse ODX to get the DIAG CODED TYPE from a DATA OBJECT PROP and create
     DiagCodedType object containing necessary info to calculate the length of the response
+    and decode it
     """
     logging.info("DATA OBJECT PROP")
     diagCodedTypeElement = dataObjectProp.find("DIAG-CODED-TYPE")
@@ -218,7 +219,6 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
         byteLength = int(bitLength / 8)
         diagCodedType = StandardLengthType(base_data_type, byteLength)
         logging.info(f"Created diagCodedType: {diagCodedType}")
-        return diagCodedType
     elif lengthType == "MIN-MAX-LENGTH-TYPE":
         logging.info("Min Max Length DOP")
         minLengthElement = diagCodedTypeElement.find("MIN-LENGTH")
@@ -232,14 +232,15 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
         termination = diagCodedTypeElement.attrib["TERMINATION"]
         diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
         logging.info(f"Created diagCodedType: {diagCodedType}")
-        return diagCodedType
     else:
         raise NotImplementedError(f"Handling of {lengthType} is not implemented")
+    return diagCodedType
 
 
 def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, XMLElement]) -> DiagCodedType:
     """Parse ODX to get the DIAG CODED TYPE from a STRUCTURE and create
     DiagCodedType object containing necessary info to calculate the length of the response
+    and decode it
     """
     byteSizeElement = structure.find("BYTE-SIZE")
     # STRUCTURE with BYTE-SIZE

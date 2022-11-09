@@ -28,8 +28,6 @@ class ReadDataByIdentifierContainer(object):
     def __init__(self):
 
         # To cater for lists we may have to re-factor here - i.e. requestFunc can be split into requestSIDFunc and requestDIDFunc to allow building on the fly from a DID list
-        # Also checkFunction into: checkSIDResonseFunction+SIDLengthFunction, checkResponseLengthFunction + responseLengthFunction, and an iterable checkDIDResponseFunction
-        # Also positiveResponseFunc into: positiveResponseSIDFunction, and an iterable positiveResponseDIDFunction
         # Negative response function is ok as it it
 
         # self.requestFunctions = {}
@@ -46,7 +44,7 @@ class ReadDataByIdentifierContainer(object):
     # on this instance of the container class.
     @staticmethod
     def __readDataByIdentifier(target, parameter):
-        logging.debug(f"===== readDataByIdentifier({target}, {parameter}) =====")
+        logging.info(f"===== readDataByIdentifier({target}, {parameter}) =====")
         # Some local functions to deal with use concatenation of a number of DIDs in RDBI operation ...
 
         # After an array of length types has been constructed for the individual response elements, we need a simple function to check it against the response
@@ -76,7 +74,7 @@ class ReadDataByIdentifierContainer(object):
 
         # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
         def popResponseElement(input, expectedResponseList: List[PosResponse]):
-            """parses the response into components for each DID
+            """Parses the response into partial response for each DID
             """
             if expectedResponseList == []:
                 raise Exception(
@@ -88,7 +86,7 @@ class ReadDataByIdentifierContainer(object):
             # DIDLength + DATA type length
             length = responseType.calculateLength(input) + expectedResponseList[0].didLength
             logging.info(f"calculated length: {length}")
-            DIDResponseComponent = input[: length]
+            DIDResponseComponent: List[int] = input[: length]
             logging.info(f"calculated response comp: {DIDResponseComponent}\n")
 
             result = (
@@ -99,7 +97,7 @@ class ReadDataByIdentifierContainer(object):
             return result
 
 
-        dids = parameter
+        dids: str | List[str] = parameter
         if type(dids) is not list:
             dids = [dids]
         logging.info(f"List of dids: {dids}")
