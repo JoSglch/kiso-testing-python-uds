@@ -3,15 +3,39 @@ from pathlib import Path
 from unittest import mock
 
 from uds.config import Config
+from uds.uds_communications.TransportProtocols.Can.CanTp import CanTp
 from uds.uds_communications.Uds.Uds import Uds
-from uds.uds_config_tool.SupportedServices.ReadDataByIdentifierContainer import ReadDataByIdentifierContainer
-from uds.uds_config_tool.UdsConfigTool import UdsTool
 
 
 class RDBIRefactorTest(unittest.TestCase):
 
-    @mock.patch("uds.uds_communications.TransportProtocols.Can.CanTp")
-    def test_RDBI(self, MockTp):
+    @mock.patch("uds.uds_communications.TransportProtocols.Can.CanTp.CanTp.send")
+    @mock.patch("uds.uds_communications.TransportProtocols.Can.CanTp.CanTp.recv")
+    def test_RDBI(self, tp_recv, tp_send):
+
+        tp_send.return_value = False
+        # ECU Serial Number = "ABC0011223344556"   (16 bytes as specified in "_Bootloader_87")
+        tp_recv.return_value = [
+            0x62,
+            0xF1,
+            0x8C,
+            0x41,
+            0x42,
+            0x43,
+            0x30,
+            0x30,
+            0x31,
+            0x31,
+            0x32,
+            0x32,
+            0x33,
+            0x33,
+            0x34,
+            0x34,
+            0x35,
+            0x35,
+            0x36,
+        ]
 
         here = Path(__file__).parent
         filename = "Bootloader.odx"
@@ -36,34 +60,17 @@ class RDBIRefactorTest(unittest.TestCase):
         Config.load_com_layer_config(DEFAULT_TP_CONFIG, DEFAULT_UDS_CONFIG)
         uds = Uds(filepath)
 
-        self.assertIsNotNone(uds)
         self.assertIsInstance(uds, Uds)
+        self.assertEqual(uds._Uds__transportProtocol, "CAN")
+        self.assertIsInstance(uds.tp, CanTp)
+        self.assertTrue(hasattr(uds, "readDataByIdentifier"))
+        self.assertTrue(callable(uds.readDataByIdentifier))
+        self.assertTrue(hasattr(uds.tp, "recv"))
 
-        MockTp.send.return_value = False
-        # ECU Serial Number = "ABC0011223344556"   (16 bytes as specified in "_Bootloader_87")
-        MockTp.recv.return_value = [
-            0x62,
-            0xF1,
-            0x8C,
-            0x41,
-            0x42,
-            0x43,
-            0x30,
-            0x30,
-            0x31,
-            0x31,
-            0x32,
-            0x32,
-            0x33,
-            0x33,
-            0x34,
-            0x34,
-            0x35,
-            0x35,
-            0x36,
-        ]
+        b = uds.readDataByIdentifier("ECU Serial Number")
 
-        b = uds.readDataByIdentifier(uds, "ECU Serial Number")
+        tp_send.assert_called_with([0x22, 0xF1, 0x8C], False, 0.01)
+        self.assertEqual("ABC0011223344556", b)
 
 
 
