@@ -210,9 +210,9 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
     logging.info("DATA OBJECT PROP")
     diagCodedTypeElement = dataObjectProp.find("DIAG-CODED-TYPE")
     lengthType = diagCodedTypeElement.get(f"{xsi}type")
+    base_data_type = diagCodedTypeElement.attrib["BASE-DATA-TYPE"]
     if lengthType == "STANDARD-LENGTH-TYPE":
         logging.info("Standard Length DOP")
-        base_data_type = diagCodedTypeElement.attrib["BASE-DATA-TYPE"]
         bitLengthElement = diagCodedTypeElement.find("BIT-LENGTH")
         bitLength = int(bitLengthElement.text)
         byteLength = int(bitLength / 8)
@@ -253,7 +253,7 @@ def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, 
         base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
         logging.info(f"base data type: {base_data_type}")
         diagCodedType = StandardLengthType(base_data_type, byteLength)
-        logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
+        logging.info(f"Created diagCodedType: {diagCodedType}")
     # STRUCTURE with DOP-REF
     else:
         logging.info(f"Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
@@ -270,7 +270,7 @@ def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, 
             logging.warning(f"Found END-OF-PDU-FIELD")
         else:
             # nested structure (if possible in ODX spec)
-            # TODO: recursively check structure getDiagCodedTypeFromStructure(nestedDop, xmlElements)
+            # TODO: recursively check structure: return getDiagCodedTypeFromStructure(nestedDop, xmlElements)
             raise NotImplementedError(f"parsing of {nestedDop.tag} is not implemented")
     return diagCodedType
 
