@@ -102,7 +102,6 @@ class ReadDataByIdentifierContainer(object):
                 input[length: ],
                 expectedResponseList[1: ]
             )
-            # logging.info(f"Result: {result}\n")
             return result
 
 
@@ -119,20 +118,11 @@ class ReadDataByIdentifierContainer(object):
             for did in dids
         ]
         # logging.info(f"requestDIDFunctions: {requestDIDFunctions}")
-        # Adding acceptance of lists at this point, as the spec allows for multiple rdbi request to be concatenated ...
-        checkSIDResponseFunction = (
-            target.readDataByIdentifierContainer.checkSIDResponseFunctions[dids[0]]
-        )
-        # logging.info(f"checkSIDResponseFunction: {checkSIDResponseFunction}")
-        checkSIDLengthFunction = (
-            target.readDataByIdentifierContainer.checkSIDLengthFunctions[dids[0]]
-        )
-        # logging.info(f"checkSIDLengthFunction: {checkSIDLengthFunction}")
         checkDIDResponseFunctions = [
             target.readDataByIdentifierContainer.checkDIDResponseFunctions[did]
             for did in dids
         ]
-        logging.info(f"checkDIDResponseFunctions per did: {checkDIDResponseFunctions}")
+        # logging.info(f"checkDIDResponseFunctions per did: {checkDIDResponseFunctions}")
         expectedResponseTypes: List[PosResponse] = [
             target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
             for did in dids
@@ -188,9 +178,9 @@ class ReadDataByIdentifierContainer(object):
                 responseRemaining,
                 expectedResponses,
             ) = popResponseElement(responseRemaining, expectedResponses)
+            # TODO: call DID check function on the object
+            expectedResponseTypes[i](DIDResponseComponent)
             DIDresponses.append(DIDResponseComponent)
-            # TODO: call a check function on the object
-            checkDIDResponseFunctions[i](DIDResponseComponent)
         logging.info(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...
         logging.info(f"----- Start response decoding")

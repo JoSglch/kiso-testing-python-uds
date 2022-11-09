@@ -58,6 +58,7 @@ class PosResponse():
         return tuple([totalMinLength, totalMaxLength])
 
     def checkDID(self, didResponse: List[int]) -> None:
+        logging.info(f"Check beginning of passed response for DID")
         actualDID = DecodeFunctions.buildIntFromList(didResponse[:self.didLength])
         if self.DID != actualDID:
             raise AttributeError(f"The expected DID {self.DID} does not match the received SID {actualDID}")
