@@ -55,6 +55,11 @@ class PosResponse():
 
         return tuple([totalMinLength, totalMaxLength])
 
+    def checkDID(self, didResponse: List[int]):
+        actualDID = DecodeFunctions.buildIntFromList(didResponse[:self.didLength])
+        if self.DID != actualDID:
+            raise AttributeError(f"Found DID {actualDID} not expected {self.DID}")
+
     def __repr__(self):
         return f"{self.__class__.__name__}: diagCodedType={self.diagCodedType}, didLength={self.didLength}, DID={self.DID}"
 

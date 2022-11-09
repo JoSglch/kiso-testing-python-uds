@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 from xml.etree.ElementTree import Element as XMLElement
 
 from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
@@ -209,35 +210,70 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
     logging.info("DATA OBJECT PROP")
     diagCodedTypeElement = dataObjectProp.find("DIAG-CODED-TYPE")
     lengthType = diagCodedTypeElement.get(f"{xsi}type")
-    # TODO: STANDARD LENGTH TYPE DOP
     if lengthType == "STANDARD-LENGTH-TYPE":
         logging.info("Standard Length DOP")
         base_data_type = diagCodedTypeElement.attrib["BASE-DATA-TYPE"]
-        logging.info(f"base data type: {base_data_type}")
         bitLengthElement = diagCodedTypeElement.find("BIT-LENGTH")
         bitLength = int(bitLengthElement.text)
-        logging.info(f"bitlength: {bitLength}")
         byteLength = int(bitLength / 8)
         diagCodedType = StandardLengthType(base_data_type, byteLength)
-        logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
+        logging.info(f"Created diagCodedType: {diagCodedType}")
         return diagCodedType
-    # TODO: MIN-MAX-LENGTH-TYPE DOP
     elif lengthType == "MIN-MAX-LENGTH-TYPE":
         logging.info("Min Max Length DOP")
         minLengthElement = diagCodedTypeElement.find("MIN-LENGTH")
         maxLengthElement = diagCodedTypeElement.find("MAX-LENGTH")
-        logging.info(f"minLengthElement: {minLengthElement}, maxLengthElement: {maxLengthElement}")
         minLength = None
         maxLength = None
         if minLengthElement is not None:
             minLength = int(minLengthElement.text)
         if maxLengthElement is not None:
             maxLength = int(maxLengthElement.text)
-        logging.info(f"extracted dynamic lengths, min: {minLength}, max: {maxLength}")
         termination = diagCodedTypeElement.attrib["TERMINATION"]
         diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
-        logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
+        logging.info(f"Created diagCodedType: {diagCodedType}")
         return diagCodedType
+    else:
+        raise NotImplementedError(f"Handling of {lengthType} is not implemented")
+
+
+def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, XMLElement]) -> DiagCodedType:
+    """Parse ODX to get the DIAG CODED TYPE from a STRUCTURE and create
+    DiagCodedType object containing necessary info to calculate the length of the response
+    """
+    byteSizeElement = structure.find("BYTE-SIZE")
+    # STRUCTURE with BYTE-SIZE
+    if structure.find("BYTE-SIZE") is not None:
+        logging.info(f"Static Length Structure...")
+        byteLength = int(byteSizeElement.text)
+        # get decoding info from first DOP, assume same decoding for each param
+        dop = xmlElements[
+            findDescendant("DOP-REF", structure).attrib["ID-REF"]
+        ]
+        base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+        logging.info(f"base data type: {base_data_type}")
+        diagCodedType = StandardLengthType(base_data_type, byteLength)
+        logging.info(f"Created diagCodedType: {diagCodedType}, type: {type(diagCodedType)}")
+    # STRUCTURE with DOP-REF
+    else:
+        logging.info(f"Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
+        dopRef = findDescendant("DOP-REF", structure)
+        if dopRef is None:
+            raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
+
+        nestedDop = xmlElements[dopRef.attrib["ID-REF"]]
+        logging.info(f"dopRef= {dopRef}, dop= {nestedDop}")
+        logging.info("Nested DOP from STRUCTURE:")
+        # DOP
+        if nestedDop.tag == "DATA-OBJECT-PROP":
+            diagCodedType = getDiagCodedTypeFromDop(nestedDop)
+        elif nestedDop.tag == "END-OF-PDU-FIELD":
+            # TODO: handle END-OF-PDU-FIELD?
+            logging.warning(f"Found END-OF-PDU-FIELD")
+        else:
+            # TODO: nested structure, not sure if possible?
+            raise NotImplementedError(f"parsing of {nestedDop.tag} is not implemented")
+    return diagCodedType
 
 
 if __name__ == "__main__":

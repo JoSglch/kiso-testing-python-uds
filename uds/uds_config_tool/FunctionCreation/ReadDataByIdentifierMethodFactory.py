@@ -46,14 +46,6 @@ checkDIDRespFuncTemplate = str(
     '    if(diagnosticId != diagnosticIdExpected): raise Exception("Diagnostic Id Received not as expected. Expected: {{0}}; Got {{1}}".format(diagnosticIdExpected, diagnosticId))'
 )
 
-checkDIDLenFuncTemplate = str(
-    "def {0}():\n"
-    "    logging.info('checkDIDLenFunc called for:')\n"
-    "    logging.info('{0}')\n"
-    '    exec("diagType = {1}")\n'
-    "    return locals()['diagType']"
-)
-
 negativeResponseFuncTemplate = str(
     "def {0}(input):\n"
     "    result = {{}}\n"
@@ -137,7 +129,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         checkSIDRespFuncName = "checkSIDResp_{0}".format(shortName)
         checkSIDLenFuncName = "checkSIDLen_{0}".format(shortName)
         checkDIDRespFuncName = "checkDIDResp_{0}".format(shortName)
-        checkDIDLenFuncName = "checkDIDLen_{0}".format(shortName)
         positiveResponseElement = xmlElements[
             (diagServiceElement.find("POS-RESPONSE-REFS"))
             .find("POS-RESPONSE-REF")
@@ -149,7 +140,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         totalLength = 0
         SIDLength = 0
         DIDLength = 0
-        diagCodedType: DiagCodedType = None
+        diagCodedType: DiagCodedType = None  # not needed?
 
         for param in paramsElement:
             try:
@@ -288,8 +279,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         # instead of checkDIDLenFunc:
         logging.info(f"diagCodedType: {type(diagCodedType)}, ")
         posResponse: PosResponse = PosResponse(diagCodedType, DIDLength, diagnosticId)
-        # logging.info(f"locals()['diagCodedType']: {locals()['diagCodedType']}")
-        # logging.info(f"locals()['posResponse']: {locals()['posResponse']}")
         logging.info(f"posResponse: {posResponse}, type: {type(posResponse)}")
         return (
             locals()[checkSIDRespFuncName],
