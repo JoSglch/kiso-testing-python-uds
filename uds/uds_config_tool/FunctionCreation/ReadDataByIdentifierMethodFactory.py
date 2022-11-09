@@ -19,9 +19,9 @@ from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
                                                       MinMaxLengthType,
                                                       StandardLengthType)
 from uds.uds_config_tool.odx.globals import xsi
-from uds.uds_config_tool.UtilityFunctions import (findDescendant,
-                                                  getDiagCodedTypeFromDop, getDiagCodedTypeFromStructure)
 from uds.uds_config_tool.odx.pos_response import PosResponse
+from uds.uds_config_tool.UtilityFunctions import (
+    getDiagCodedTypeFromDop, getDiagCodedTypeFromStructure)
 
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
@@ -29,22 +29,6 @@ from uds.uds_config_tool.odx.pos_response import PosResponse
 
 requestSIDFuncTemplate = str("def {0}():\n" "    return {1}")
 requestDIDFuncTemplate = str("def {0}():\n" "    return {1}")
-
-checkSIDRespFuncTemplate = str(
-    "def {0}(input):\n"
-    "    serviceIdExpected = {1}\n"
-    "    serviceId = DecodeFunctions.buildIntFromList(input[{2}:{3}])\n"
-    '    if(serviceId != serviceIdExpected): raise Exception("Service Id Received not expected. Expected {{0}}; Got {{1}} ".format(serviceIdExpected, serviceId))'
-)
-
-checkSIDLenFuncTemplate = str("def {0}():\n" "    return {1}")
-
-checkDIDRespFuncTemplate = str(
-    "def {0}(input):\n"
-    "    diagnosticIdExpected = {1}\n"
-    "    diagnosticId = DecodeFunctions.buildIntFromList(input[{2}:{3}])\n"
-    '    if(diagnosticId != diagnosticIdExpected): raise Exception("Diagnostic Id Received not as expected. Expected: {{0}}; Got {{1}}".format(diagnosticIdExpected, diagnosticId))'
-)
 
 negativeResponseFuncTemplate = str(
     "def {0}(input):\n"
@@ -137,7 +121,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         logging.info(positiveResponseElement.find("SHORT-NAME").text)
         paramsElement = positiveResponseElement.find("PARAMS")
 
-        totalLength = 0
         SIDLength = 0
         DIDLength = 0
         diagCodedType: DiagCodedType = None  # not needed?
@@ -150,8 +133,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                 except AttributeError:
                     pass
 
-                startByte = int(param.find("BYTE-POSITION").text)
-
                 if semantic == "SERVICE-ID":
                     logging.info("PARAM: SID")
                     responseId = int(param.find("CODED-VALUE").text)
@@ -159,11 +140,8 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     listLength = int(bitLength / 8)
-                    responseIdStart = startByte
-                    responseIdEnd = startByte + listLength
-                    totalLength += listLength
                     SIDLength = listLength
-                    logging.info(f"totalLength: {totalLength}")
+                    logging.info(f"SIDLength: {SIDLength}")
                 elif semantic == "ID":
                     logging.info("PARAM: ID")
                     diagnosticId = int(param.find("CODED-VALUE").text)
@@ -172,11 +150,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     )
                     listLength = int(bitLength / 8)
                     DIDLength = listLength
-                    logging.info(f"DIDLength: {DIDLength}, type: {type(DIDLength)}")
-                    diagnosticIdStart = startByte
-                    diagnosticIdEnd = startByte + listLength
-                    totalLength += listLength
-                    logging.info(f"totalLength: {totalLength}")
+                    logging.info(f"DIDLength: {DIDLength}")
                 elif semantic == "DATA":
                     # TODO: create the diagCodedType in this condition
                     logging.info("PARAM: DATA")
@@ -200,37 +174,10 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                 logging.warning(sys.exc_info())
                 pass
 
-        checkSIDRespFuncString = checkSIDRespFuncTemplate.format(
-            checkSIDRespFuncName,  # 0
-            responseId,  # 1
-            responseIdStart,  # 2
-            responseIdEnd,
-        )  # 3
-        logging.info(f"checkSIDRespFuncString: {checkSIDRespFuncString}")
-        exec(checkSIDRespFuncString)
-        checkSIDLenFuncString = checkSIDLenFuncTemplate.format(
-            checkSIDLenFuncName, SIDLength  # 0
-        )  # 1
-        logging.info(f"checkSIDLenFuncString: {checkSIDLenFuncString}")
-        exec(checkSIDLenFuncString)
-        checkDIDRespFuncString = checkDIDRespFuncTemplate.format(
-            checkDIDRespFuncName,  # 0
-            diagnosticId,  # 1
-            diagnosticIdStart
-            - SIDLength,  # 2... note: we no longer look at absolute pos in the response,
-            diagnosticIdEnd - SIDLength,
-        )  # 3      but look at the DID response as an isolated extracted element.
-        logging.info(f"checkDIDRespFuncString: {checkDIDRespFuncString}")
-        exec(checkDIDRespFuncString)
-        # instead of checkDIDLenFunc (also can get rid of other check functions):
+        # instead of checkDIDLenFunc and all the others (also can get rid of other check functions):
         posResponse = PosResponse(diagCodedType, DIDLength, diagnosticId, SIDLength, responseId)
         logging.info(f"posResponse: {posResponse}")
-        return (
-            locals()[checkSIDRespFuncName],
-            locals()[checkSIDLenFuncName],
-            locals()[checkDIDRespFuncName],
-            posResponse
-        )
+        return posResponse
 
     ##
     # @brief may need refactoring to deal with multiple positive-responses (WIP)

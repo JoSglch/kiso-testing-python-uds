@@ -271,14 +271,11 @@ class UdsTool:
                         negativeResponseFunction, humanName
                     )
                     logging.info(f"Binding in UdsConfigTool")
-                    checkFunctions = ReadDataByIdentifierMethodFactory.create_checkPositiveResponseFunctions(
+                    posResponse = ReadDataByIdentifierMethodFactory.create_checkPositiveResponseFunctions(
                         value, xmlElements
                     )
-                    logging.info(f"checkFunctions: {checkFunctions}")
-                    cls.rdbiContainer.add_checkSIDResponseFunction(checkFunctions[0], humanName)
-                    cls.rdbiContainer.add_checkSIDLengthFunction(checkFunctions[1], humanName)
-                    cls.rdbiContainer.add_checkDIDResponseFunction(checkFunctions[2], humanName)
-                    cls.rdbiContainer.add_checkDIDLengthFunction(checkFunctions[3], humanName)
+                    logging.info(f"posResponseObject: {posResponse}")
+                    cls.rdbiContainer.add_posResponseObject(posResponse, humanName)
 
                     positiveResponseFunction = ReadDataByIdentifierMethodFactory.create_encodePositiveResponseFunction(
                         value, xmlElements

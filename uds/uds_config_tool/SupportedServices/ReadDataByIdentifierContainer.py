@@ -108,7 +108,7 @@ class ReadDataByIdentifierContainer(object):
         dids = parameter
         if type(dids) is not list:
             dids = [dids]
-        logging.info(f"dids: {dids}")
+        logging.info(f"List of dids: {dids}")
         # Adding acceptance of lists at this point, as the spec allows for multiple rdbi request to be concatenated ...
         requestSIDFunction = target.readDataByIdentifierContainer.requestSIDFunctions[
             dids[0]
@@ -118,11 +118,6 @@ class ReadDataByIdentifierContainer(object):
             for did in dids
         ]
         # logging.info(f"requestDIDFunctions: {requestDIDFunctions}")
-        checkDIDResponseFunctions = [
-            target.readDataByIdentifierContainer.checkDIDResponseFunctions[did]
-            for did in dids
-        ]
-        # logging.info(f"checkDIDResponseFunctions per did: {checkDIDResponseFunctions}")
         expectedResponseTypes: List[PosResponse] = [
             target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
             for did in dids
@@ -214,24 +209,9 @@ class ReadDataByIdentifierContainer(object):
         self.requestDIDFunctions[dictionaryEntry] = aFunction
 
     ##
-    # @brief method to add function to container - checkSIDResponseFunction handles the checking of the returning SID details in the response message
-    def add_checkSIDResponseFunction(self, aFunction, dictionaryEntry):
-        self.checkSIDResponseFunctions[dictionaryEntry] = aFunction
-
-    ##
-    # @brief method to add function to container - checkSIDLengthFunction handles return of the expected SID details length
-    def add_checkSIDLengthFunction(self, aFunction, dictionaryEntry):
-        self.checkSIDLengthFunctions[dictionaryEntry] = aFunction
-
-    ##
-    # @brief method to add function to container - checkDIDResponseFunction handles the checking of the returning DID details in the response message
-    def add_checkDIDResponseFunction(self, aFunction, dictionaryEntry):
-        self.checkDIDResponseFunctions[dictionaryEntry] = aFunction
-
-    ##
     # @brief method to add function to container - checkDIDLengthFunction handles return of the expected DID details length
-    def add_checkDIDLengthFunction(self, aFunction, dictionaryEntry):
-        self.checkDIDLengthFunctions[dictionaryEntry] = aFunction
+    def add_posResponseObject(self, aObject: PosResponse, dictionaryEntry: str):
+        self.checkDIDLengthFunctions[dictionaryEntry] = aObject
 
     ##
     # @brief method to add function to container - negativeResponseFunction handles the checking of all possible negative response codes in the response message, raising the required exception
