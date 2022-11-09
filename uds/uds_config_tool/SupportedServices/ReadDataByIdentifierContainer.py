@@ -113,7 +113,7 @@ class ReadDataByIdentifierContainer(object):
         ]
         # logging.info(f"requestDIDFunctions: {requestDIDFunctions}")
         expectedResponseTypes: List[PosResponse] = [
-            target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
+            target.readDataByIdentifierContainer.posResponseObjects[did]
             for did in dids
         ]
         logging.info(f"expectedResponseTypes per did: {expectedResponseTypes}")
@@ -122,12 +122,6 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
         )  # ... single code irrespective of list use, so just use the first
 
-        # Adding acceptance of lists at this point, as the spec allows for multiple rdbi request to be concatenated ...
-        positiveResponseFunctions = [
-            target.readDataByIdentifierContainer.positiveResponseFunctions[did]
-            for did in dids
-        ]
-        logging.info(f"positiveResponseFunctions per did: {positiveResponseFunctions}")
         # Call the sequence of functions to execute the RDBI request/response action ...
         # ==============================================================================
 
