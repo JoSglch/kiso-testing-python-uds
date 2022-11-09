@@ -63,7 +63,7 @@ class PosResponse():
             raise AttributeError(f"The expected DID {self.DID} does not match the received SID {actualDID}")
 
     def checkSID(self, response: List[int]) -> None:
-        actualSID = DecodeFunctions.buildIntFromList(response)
+        actualSID = DecodeFunctions.buildIntFromList(response[:self.sidLength])
         if self.SID != actualSID:
             raise AttributeError(f"The expected SID {self.SID} does not match the received SID {actualSID}")
 
