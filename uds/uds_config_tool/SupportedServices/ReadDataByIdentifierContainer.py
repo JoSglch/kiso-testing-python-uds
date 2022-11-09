@@ -51,7 +51,7 @@ class ReadDataByIdentifierContainer(object):
         def checkTotalResponseLength(response: List[int], expectedResponseTypes: List[PosResponse]) -> None:
             """Calculates a total minimum and maximum for valid response length range
             """
-            logging.info(f"\nChecking length plausibility of response length")
+            logging.info(f"Checking length plausibility of response length")
             totalMinLength = 0
             totalMaxLength = 0
 
@@ -70,7 +70,7 @@ class ReadDataByIdentifierContainer(object):
 
             if len(response) < totalMinLength or len(response) > totalMaxLength:
                 raise ValueError(f"Expected response length range {resultRange} does not match received response length {len(response)}")
-            logging.info(f"Check passed, response length = {len(response)}, possible range = {resultRange}\n")
+            logging.info(f"Check passed, response length = {len(response)}, possible range = {resultRange}")
 
         # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
         def popResponseElement(input, expectedResponseList: List[PosResponse]):
@@ -87,7 +87,7 @@ class ReadDataByIdentifierContainer(object):
             length = responseType.calculateLength(input) + expectedResponseList[0].didLength
             logging.info(f"calculated length: {length}")
             DIDResponseComponent: List[int] = input[: length]
-            logging.info(f"calculated response comp: {DIDResponseComponent}\n")
+            logging.info(f"calculated response comp: {DIDResponseComponent}")
 
             result = (
                 DIDResponseComponent,
