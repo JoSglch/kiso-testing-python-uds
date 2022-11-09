@@ -89,15 +89,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         responseId = 0
         diagnosticId = 0
 
-        responseIdStart = 0
-        responseIdEnd = 0
-        diagnosticIdStart = 0
-        diagnosticIdEnd = 0
-
-        shortName = diagServiceElement.find("SHORT-NAME").text
-        checkSIDRespFuncName = "checkSIDResp_{0}".format(shortName)
-        checkSIDLenFuncName = "checkSIDLen_{0}".format(shortName)
-        checkDIDRespFuncName = "checkDIDResp_{0}".format(shortName)
         positiveResponseElement = xmlElements[
             (diagServiceElement.find("POS-RESPONSE-REFS"))
             .find("POS-RESPONSE-REF")

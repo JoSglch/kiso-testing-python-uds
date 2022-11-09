@@ -140,7 +140,7 @@ class ReadDataByIdentifierContainer(object):
         )  # ... return nrc value if a negative response is received
         if negativeResponse:
             return negativeResponse
-        logging.info(f"----- Start response parsing")
+        logging.info(f"----- Start response parsing ------")
         # We have a positive response so check that it makes sense to us ...
 
         # Check SID and take it from first expected response (they all have the same)
@@ -166,7 +166,7 @@ class ReadDataByIdentifierContainer(object):
             DIDresponses.append(DIDResponseComponent)
         logging.info(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...
-        logging.info(f"----- Start response decoding")
+        logging.info(f"----- Start response decoding ------")
         returnValue = tuple(
             [
                 expectedResponseTypes[i].parse(DIDresponses[i])
