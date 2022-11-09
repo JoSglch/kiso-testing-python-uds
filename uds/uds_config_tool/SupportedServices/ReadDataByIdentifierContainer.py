@@ -54,7 +54,7 @@ class ReadDataByIdentifierContainer(object):
             logging.info(f"Checking length plausibility of response length")
             totalMinLength = 0
             totalMaxLength = 0
-
+            # TODO: how to handle MAX-LENGTH = None?
             for responseType in expectedResponseTypes:
                 totalMinLength += responseType.didLength
                 totalMaxLength += responseType.didLength
