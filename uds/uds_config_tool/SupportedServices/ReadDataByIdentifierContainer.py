@@ -137,7 +137,7 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.checkDIDLengthFunctions[did]
             for did in dids
         ]
-        logging.info(f"expectedResponseTypes per did: {expectedResponses}")
+        logging.info(f"expectedResponseTypes per did: {expectedResponseTypes}")
         # This is the same for all RDBI responses, irrespective of list or single input
         negativeResponseFunction = (
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
