@@ -66,6 +66,10 @@ class ReadDataByIdentifierContainer(object):
                         totalMinLength += responseType.diagCodedType.minLength
                     if responseType.diagCodedType.maxLength is not None:
                         totalMaxLength += responseType.diagCodedType.maxLength
+                    else:
+                        # handle max-length == none -> no range calculation possible
+                        logging.info(f"Plausibility check not possible if max-length not given.")
+                        return
             resultRange = (totalMinLength, totalMaxLength)
 
             if len(response) < totalMinLength or len(response) > totalMaxLength:

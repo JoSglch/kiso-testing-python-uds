@@ -15,9 +15,10 @@ from typing import Callable
 
 from uds.config import Config
 from uds.factories import TpFactory
-from uds.uds_config_tool.UdsConfigTool import UdsTool
 from uds.uds_config_tool.IHexFunctions import ihexFile as ihexFileParser
 from uds.uds_config_tool.ISOStandard.ISOStandard import IsoDataFormatIdentifier
+from uds.uds_config_tool.UdsConfigTool import UdsTool
+
 
 ##
 # @brief a description is needed

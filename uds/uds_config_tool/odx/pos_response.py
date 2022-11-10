@@ -24,8 +24,9 @@ class PosResponse():
         """
         # remove the did before parsing -> TODO: insert DID check here?
         toParse = DIDResponse[self.didLength: ]
-        # remove termination char if exists (assume it always exists):
-        if isinstance(self.diagCodedType, MinMaxLengthType):
+        # remove termination char
+        # TODO: make termination char length dynamic: 0 for endofpdu/  if its not END-OF-PDU type:
+        if isinstance(self.diagCodedType, MinMaxLengthType) and self.diagCodedType.termination.value != "END-OF-PDU":
             toParse = toParse[ :-1]
         encodingType = self.diagCodedType.base_data_type
         if encodingType == "A_ASCIISTRING":

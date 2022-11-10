@@ -36,10 +36,14 @@ def test_RDBI_staticLength(monkeypatch, default_tp_config, default_uds_config):
     filename = "Bootloader.odx"
     odxFile = here.joinpath(filename)
 
-    def mock_send(a,b,c,d):
+    def mock_send(self, payload, functionalReq, tpWaitTime):
+        assert payload == [0x22, 0xF1, 0x8C]
+        assert functionalReq == False
+        assert tpWaitTime == 0.01
+
         return False
 
-    def mock_return(a,b):
+    def mock_return(self, timeout_s):
         return [
             0x62,
             0xF1,
@@ -75,14 +79,18 @@ def test_RDBI_staticLength(monkeypatch, default_tp_config, default_uds_config):
     #mock_send.assert_called_with([0x22, 0xF1, 0x8C], False, 0.01)
     assert expected == actual
 
+
 def test_RDBI_minMaxLength(monkeypatch, default_tp_config, default_uds_config):
     here = Path(__file__).parent
-    odxFile = here.joinpath("minimalexample.odx")
+    odxFile = here.joinpath("minmaxlength.odx")
 
-    def mock_send(a,b,c,d):
+    def mock_send(self, payload, functionalReq, tpWaitTime):
+        assert payload == [0x22, 0x02, 0x94]
+        assert functionalReq == False
+        assert tpWaitTime == 0.01
         return False
 
-    def mock_return(a,b):
+    def mock_return(self, timeout_s):
         # DID: 660 => 0x2 0x94 Termination: "Zero" Min: 1 Max: 15 Data: ABC0011223344
         return [
             0x62, # SID
@@ -115,4 +123,50 @@ def test_RDBI_minMaxLength(monkeypatch, default_tp_config, default_uds_config):
     actual = uds.readDataByIdentifier("Dynamic_PartNumber")
 
     # mock_send.assert_called_with([0x22, 0x02, 0x94], False, 0.01)
+    assert expected == actual
+
+
+def test_RDBI_minLengthOnly(monkeypatch, default_tp_config, default_uds_config):
+
+    here = Path(__file__).parent
+    odxFile = here.joinpath("minlengthonly.odx")
+
+    def mock_send(self, payload, functionalReq, tpWaitTime):
+        assert payload == [0x22, 0x02, 0x94]
+        assert functionalReq == False
+        assert tpWaitTime == 0.01
+
+        return False
+
+    def mock_return(self, timeout_s):
+        # DID: 660 => 0x2 0x94 Termination: "end-of-pdu" Min: 1 Data: ABC0011223344
+        return [
+            0x62, # SID
+            0x02, # DID
+            0x94, # DID
+            0x41, # DATA ...
+            0x42,
+            0x43,
+            0x30,
+            0x30,
+            0x31,
+            0x31,
+            0x32,
+            0x32,
+            0x33,
+            0x33,
+            0x34,
+            0x34,
+        ] # no Termination Char for end-of-pdu
+    expected = "ABC0011223344"
+
+    monkeypatch.setattr(CanTp, "send", mock_send)
+    monkeypatch.setattr(CanTp, "recv", mock_return)
+
+
+    Config.load_com_layer_config(default_tp_config, default_uds_config)
+    uds = Uds(odxFile)
+
+    actual = uds.readDataByIdentifier("Dynamic_PartNumber")
+
     assert expected == actual
