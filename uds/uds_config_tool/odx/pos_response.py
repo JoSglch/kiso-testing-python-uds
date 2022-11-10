@@ -27,7 +27,8 @@ class PosResponse():
         # remove termination char
         # TODO: make termination char length dynamic: 0 for endofpdu/  if its not END-OF-PDU type:
         if isinstance(self.diagCodedType, MinMaxLengthType) and self.diagCodedType.termination.value != "END-OF-PDU":
-            toParse = toParse[ :-1]
+            terminationCharLength = self.diagCodedType.getTerminationLength()
+            toParse = toParse[ :-terminationCharLength]
         encodingType = self.diagCodedType.base_data_type
         if encodingType == "A_ASCIISTRING":
             logging.info(f"Trying to decode A_ASCIISTRING:")

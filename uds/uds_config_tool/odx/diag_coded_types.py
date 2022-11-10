@@ -53,7 +53,7 @@ class MinMaxLengthType(DiagCodedType):
         super().__init__(base_data_type)
         self.minLength = minLength
         self.maxLength = maxLength
-        self.termination = self._getTermination(termination)
+        self.termination: MinMaxLengthType.TerminationChar = self._getTermination(termination)
 
 
     @staticmethod
@@ -66,6 +66,13 @@ class MinMaxLengthType(DiagCodedType):
             return MinMaxLengthType.TerminationChar.END_OF_PDU
         else:
             raise ValueError(f"Termination {termination} found in .odx file is not valid")
+
+    def getTerminationLength(self):
+        if self.termination == MinMaxLengthType.TerminationChar.ZERO:
+            terminationLength = 1
+        elif self.termination == MinMaxLengthType.TerminationChar.HEX_FF:
+            terminationLength = 1
+        return terminationLength
 
 
     def calculateLength(self, response: List[int]) -> int:
