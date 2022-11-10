@@ -84,8 +84,6 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
     @staticmethod
     def create_checkPositiveResponseFunctions(diagServiceElement, xmlElements):
         logging.info(f"----- create_checkPositiveResponseFunctions() -----")
-        responseId = 0
-        diagnosticId = 0
 
         positiveResponseElement = xmlElements[
             (diagServiceElement.find("POS-RESPONSE-REFS"))
@@ -95,9 +93,12 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         logging.info(positiveResponseElement.find("SHORT-NAME").text)
         paramsElement = positiveResponseElement.find("PARAMS")
 
+        # not needed?
+        responseId = 0
+        diagnosticId = 0
         SIDLength = 0
         DIDLength = 0
-        diagCodedType: DiagCodedType = None  # not needed?
+        diagCodedType: DiagCodedType = None
 
         for param in paramsElement:
             try:
@@ -124,7 +125,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     DIDLength = int(bitLength / 8)
                     logging.info(f"DIDLength: {DIDLength}")
                 elif semantic == "DATA":
-                    # TODO: create the diagCodedType in this condition
+                    # need to parse the param for the DIAG CODED TYPE
                     logging.info("PARAM: DATA")
                     dataObjectElement = xmlElements[
                         (param.find("DOP-REF")).attrib["ID-REF"]

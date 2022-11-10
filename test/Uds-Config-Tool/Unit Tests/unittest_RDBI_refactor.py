@@ -83,7 +83,7 @@ class RDBIRefactorTest(unittest.TestCase):
     def test_RDBI_minMaxLengthBoth(self, tp_recv, tp_send):
         odxFile = self.here.joinpath("minimalexample.odx")
         tp_send.return_value = False
-
+        # DID: 660 => 0x2 0x94 Termination: "Zero" Min: 1 Max: 15 Data: ABC0011223344
         tp_recv.return_value = [
             0x62, # SID
             0x02, # DID
