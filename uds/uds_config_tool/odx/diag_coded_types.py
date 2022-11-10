@@ -44,7 +44,7 @@ class MinMaxLengthType(DiagCodedType):
     """
 
     class TerminationChar(Enum):
-        ZERO = 0,
+        ZERO = 0
         HEX_FF = 255
         END_OF_PDU = "END-OF-PDU"
 
@@ -92,7 +92,7 @@ class MinMaxLengthType(DiagCodedType):
             if self.maxLength is None:
                 return len(response)
             else:
-                # TODO: calculate length
+                # TODO: go through response till end or max length
                 raise NotImplementedError(f"Handle max-length here")
 
 
