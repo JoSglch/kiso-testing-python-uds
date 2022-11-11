@@ -11,12 +11,13 @@ __status__ = "Development"
 
 import logging
 import sys
+from typing import List
 
 from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.FunctionCreation.iServiceMethodFactory import \
     IServiceMethodFactory
-from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType)
-from uds.uds_config_tool.odx.globals import xsi
+from uds.uds_config_tool.odx.diag_coded_types import DiagCodedType
+from uds.uds_config_tool.odx.param import Param
 from uds.uds_config_tool.odx.pos_response import PosResponse
 from uds.uds_config_tool.UtilityFunctions import (
     getDiagCodedTypeFromDop, getDiagCodedTypeFromStructure)
@@ -98,37 +99,44 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         diagnosticId = 0
         SIDLength = 0
         DIDLength = 0
-        diagCodedType: DiagCodedType = None
-
-        for param in paramsElement:
+        params: List[Param] = None
+        param: Param = None
+        # TODO: add handling of multiple data params -> have a list of params in PosResponse
+        for paramElement in paramsElement:
             try:
                 semantic = None
                 try:
-                    semantic = param.attrib["SEMANTIC"]
+                    semantic = paramElement.attrib["SEMANTIC"]
                 except AttributeError:
                     pass
 
+                short_name = (paramElement.find("SHORT-NAME")).text
+                logging.info(f"params short name: {short_name}")
+                byte_position = int((paramElement.find("BYTE-POSITION")).text)
+                logging.info(f"params byte position: {byte_position}")
+
                 if semantic == "SERVICE-ID":
                     logging.info("PARAM: SID")
-                    responseId = int(param.find("CODED-VALUE").text)
+                    responseId = int(paramElement.find("CODED-VALUE").text)
                     bitLength = int(
-                        (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
+                        (paramElement.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     SIDLength = int(bitLength / 8)
                     logging.info(f"SIDLength: {SIDLength}")
                 elif semantic == "ID":
                     logging.info("PARAM: ID")
-                    diagnosticId = int(param.find("CODED-VALUE").text)
+                    diagnosticId = int(paramElement.find("CODED-VALUE").text)
                     bitLength = int(
-                        (param.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
+                        (paramElement.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     DIDLength = int(bitLength / 8)
                     logging.info(f"DIDLength: {DIDLength}")
                 elif semantic == "DATA":
+                    diagCodedType: DiagCodedType = None
                     # need to parse the param for the DIAG CODED TYPE
                     logging.info("PARAM: DATA")
                     dataObjectElement = xmlElements[
-                        (param.find("DOP-REF")).attrib["ID-REF"]
+                        (paramElement.find("DOP-REF")).attrib["ID-REF"]
                     ]
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
                         diagCodedType = getDiagCodedTypeFromDop(dataObjectElement)
@@ -137,6 +145,8 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     else:
                         # neither DOP nor STRUCTURE
                         pass
+                    param: Param = Param(short_name, byte_position, diagCodedType)
+                    logging.info(f"params list: {params}")
                 else:
                     # not a PARAM with SID, ID (= DID), or DATA
                     pass
@@ -145,7 +155,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                 pass
 
         # instead of checkDIDLenFunc and all the others (also can get rid of other check functions):
-        posResponse = PosResponse(diagCodedType, DIDLength, diagnosticId, SIDLength, responseId)
+        posResponse = PosResponse(param, DIDLength, diagnosticId, SIDLength, responseId)
         logging.info(f"posResponse: {posResponse}")
         return posResponse
 

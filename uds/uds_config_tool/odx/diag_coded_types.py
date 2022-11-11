@@ -9,6 +9,10 @@ class DiagCodedType(ABC):
     """
 
     def __init__(self, base_data_type: str) -> None:
+        """initialize attributes
+
+        :param base_data_type: BASE-DATA-TYPE attribute of DIAG-CODED-TYPE xml element
+        """
         super().__init__()
         self.base_data_type = base_data_type
 
@@ -23,14 +27,21 @@ class StandardLengthType(DiagCodedType):
     """
 
     def __init__(self, base_data_type: str, bitLength: int) -> None:
+        """initialize attributes
+
+        :param base_data_type: BASE-DATA-TYPE attribute of DIAG-CODED-TYPE xml element
+        :param bitLength: length in number of bits
+        """
         super().__init__(base_data_type)
         self.bitLength = bitLength
 
     def calculateLength(self, response: List[int]) -> int:
         """Returns the static length of StandardLengthType (excluding DID)
+
+        :param response: the response to parse the length from (not needed for standard length)
+        :return: length in bits as int
         """
         logging.info("Calculating length in standardLengthType")
-
         return self.bitLength
 
     def __repr__(self):
@@ -40,7 +51,7 @@ class StandardLengthType(DiagCodedType):
 class MinMaxLengthType(DiagCodedType):
     """Represents the DIAG-CODED-TYPE of a POS-RESPONSE with dynamic length
 
-    minLength or maxLength are None if they are not specified in the ODX file
+    maxLength is None if it is not specified in the ODX file
     """
 
     class TerminationChar(Enum):
@@ -50,6 +61,8 @@ class MinMaxLengthType(DiagCodedType):
 
 
     def __init__(self, base_data_type: str, minLength: int, maxLength: int, termination: str) -> None:
+        """
+        """
         super().__init__(base_data_type)
         self.minLength = minLength
         self.maxLength = maxLength
@@ -78,6 +91,9 @@ class MinMaxLengthType(DiagCodedType):
     def calculateLength(self, response: List[int]) -> int:
         """Returns the dynamically calculated length of MinMaxLengthType from the response
         (excluding DID)
+
+        :param response: the response to parse the length from
+        :return: length in bytes as int
         """
         logging.info(f"passed response: {response}")
         if self.termination.value != "END-OF-PDU":
@@ -89,19 +105,20 @@ class MinMaxLengthType(DiagCodedType):
                 elif value == self.termination or dynamicLength == self.maxLength:
                     logging.info(f"Found termination char {self.termination} or reached max length {self.maxLength}")
                     logging.info(f"Length at end condition: {dynamicLength}")
-                    # TODO: does it ALWAYS have a termination char, even if max length used? -> then need to handle separately:
+                    # TODO: does it ALWAYS have a termination char, even if max length used? -> handle separately:
                     # + 1 for termination char, no + 1 for max length
                     return dynamicLength + 1 # account for termination char with + 1
                 elif self.maxLength is not None and dynamicLength > self.maxLength:
                     raise ValueError(f"Response longer than expected max length")
-        # END-OF-PDU: response ends after max-length or at response end (?)
+        # END-OF-PDU: response ends after max-length or at response end
         else:
             if self.maxLength is None:
                 return len(response)
             else:
-                # TODO: go through response till end or max length
-                raise NotImplementedError(f"Handle max-length here")
+                # go through response till end or max length (whichever comes first)
+                return min(self.maxLength, len(response))
 
 
     def __repr__(self):
-        return f"{self.__class__.__name__}: base-data-type={self.base_data_type}, min={self.minLength}, max={self.maxLength}, termination={self.termination}"
+        return f"{self.__class__.__name__}: base-data-type={self.base_data_type}, min={self.minLength}, \
+            max={self.maxLength}, termination={self.termination}"

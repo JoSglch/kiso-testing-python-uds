@@ -58,14 +58,14 @@ class ReadDataByIdentifierContainer(object):
             for responseType in expectedResponseTypes:
                 totalMinLength += responseType.didLength
                 totalMaxLength += responseType.didLength
-                if isinstance(responseType.diagCodedType, StandardLengthType):
-                    totalMinLength += responseType.diagCodedType.bitLength
-                    totalMaxLength += responseType.diagCodedType.bitLength
-                elif isinstance(responseType.diagCodedType, MinMaxLengthType):
-                    if responseType.diagCodedType.minLength is not None:
-                        totalMinLength += responseType.diagCodedType.minLength
-                    if responseType.diagCodedType.maxLength is not None:
-                        totalMaxLength += responseType.diagCodedType.maxLength
+                if isinstance(responseType.param.diagCodedType, StandardLengthType):
+                    totalMinLength += responseType.param.diagCodedType.bitLength
+                    totalMaxLength += responseType.param.diagCodedType.bitLength
+                elif isinstance(responseType.param.diagCodedType, MinMaxLengthType):
+                    if responseType.param.diagCodedType.minLength is not None:
+                        totalMinLength += responseType.param.diagCodedType.minLength
+                    if responseType.param.diagCodedType.maxLength is not None:
+                        totalMaxLength += responseType.param.diagCodedType.maxLength
                     else:
                         # handle max-length == none -> no range calculation possible
                         logging.info(f"Plausibility check not possible if max-length not given.")
@@ -86,7 +86,7 @@ class ReadDataByIdentifierContainer(object):
                 )
             result = None
             # take the next responseType and calculate its length in the response
-            responseType: DiagCodedType = expectedResponseList[0].diagCodedType
+            responseType: DiagCodedType = expectedResponseList[0].param.diagCodedType
             # DIDLength + DATA type length
             length = responseType.calculateLength(input) + expectedResponseList[0].didLength
             logging.info(f"calculated length: {length}")
@@ -171,7 +171,7 @@ class ReadDataByIdentifierContainer(object):
         logging.info(f"----- Start response decoding ------")
         returnValue = tuple(
             [
-                expectedResponseTypes[i].parse(DIDresponses[i])
+                expectedResponseTypes[i].decode(DIDresponses[i])
                 for i in range(len(DIDresponses))
             ]
         )

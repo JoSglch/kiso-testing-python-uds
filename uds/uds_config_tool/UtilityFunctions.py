@@ -216,6 +216,7 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
         logging.info("Standard Length DOP")
         bitLengthElement = diagCodedTypeElement.find("BIT-LENGTH")
         bitLength = int(bitLengthElement.text)
+        # TODO: do this in DiagCodedType instead
         byteLength = int(bitLength / 8)
         diagCodedType = StandardLengthType(base_data_type, byteLength)
         logging.info(f"Created diagCodedType: {diagCodedType}")
