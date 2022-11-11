@@ -30,146 +30,144 @@ def default_uds_config():
     }
     return DEFAULT_UDS_CONFIG
 
-def test_RDBI_staticLength(monkeypatch, default_tp_config, default_uds_config):
+# def test_RDBI_staticLength(monkeypatch, default_tp_config, default_uds_config):
 
-    here = Path(__file__).parent
-    filename = "Bootloader.odx"
-    odxFile = here.joinpath(filename)
+#     here = Path(__file__).parent
+#     filename = "Bootloader.odx"
+#     odxFile = here.joinpath(filename)
 
-    def mock_send(self, payload, functionalReq, tpWaitTime):
-        assert payload == [0x22, 0xF1, 0x8C]
-        assert functionalReq == False
-        assert tpWaitTime == 0.01
+#     def mock_send(self, payload, functionalReq, tpWaitTime):
+#         assert payload == [0x22, 0xF1, 0x8C]
+#         assert functionalReq == False
+#         assert tpWaitTime == 0.01
 
-        return False
+#         return False
 
-    def mock_return(self, timeout_s):
-        return [
-            0x62,
-            0xF1,
-            0x8C,
-            0x41,
-            0x42,
-            0x43,
-            0x30,
-            0x30,
-            0x31,
-            0x31,
-            0x32,
-            0x32,
-            0x33,
-            0x33,
-            0x34,
-            0x34,
-            0x35,
-            0x35,
-            0x36,
-        ]
+#     def mock_return(self, timeout_s):
+#         return [
+#             0x62,
+#             0xF1,
+#             0x8C,
+#             0x41,
+#             0x42,
+#             0x43,
+#             0x30,
+#             0x30,
+#             0x31,
+#             0x31,
+#             0x32,
+#             0x32,
+#             0x33,
+#             0x33,
+#             0x34,
+#             0x34,
+#             0x35,
+#             0x35,
+#             0x36,
+#         ]
 
-    expected = {"ECU_Serial_Number": "ABC0011223344556"}
+#     expected = {"ECU_Serial_Number": "ABC0011223344556"}
 
-    monkeypatch.setattr(CanTp, "send", mock_send)
-    monkeypatch.setattr(CanTp, "recv", mock_return)
+#     monkeypatch.setattr(CanTp, "send", mock_send)
+#     monkeypatch.setattr(CanTp, "recv", mock_return)
 
-    Config.load_com_layer_config(default_tp_config, default_uds_config)
-    uds = Uds(odxFile)
+#     Config.load_com_layer_config(default_tp_config, default_uds_config)
+#     uds = Uds(odxFile)
 
-    actual = uds.readDataByIdentifier("ECU Serial Number")
+#     actual = uds.readDataByIdentifier("ECU Serial Number")
 
-    #mock_send.assert_called_with([0x22, 0xF1, 0x8C], False, 0.01)
-    assert expected == actual
-
-
-def test_RDBI_minMaxLength(monkeypatch, default_tp_config, default_uds_config):
-    here = Path(__file__).parent
-    odxFile = here.joinpath("minmaxlength.odx")
-
-    def mock_send(self, payload, functionalReq, tpWaitTime):
-        assert payload == [0x22, 0x02, 0x94]
-        assert functionalReq == False
-        assert tpWaitTime == 0.01
-        return False
-
-    def mock_return(self, timeout_s):
-        # DID: 660 => 0x2 0x94 Termination: "Zero" Min: 1 Max: 15 Data: ABC0011223344
-        return [
-            0x62, # SID
-            0x02, # DID
-            0x94, # DID
-            0x41, # DATA ...
-            0x42,
-            0x43,
-            0x30,
-            0x30,
-            0x31,
-            0x31,
-            0x32,
-            0x32,
-            0x33,
-            0x33,
-            0x34,
-            0x34,
-            0x00 # Termination Char
-        ]
-    expected = {"PartNumber": "ABC0011223344"}
-
-    monkeypatch.setattr(CanTp, "send", mock_send)
-    monkeypatch.setattr(CanTp, "recv", mock_return)
+#     assert expected == actual
 
 
-    Config.load_com_layer_config(default_tp_config, default_uds_config)
-    uds = Uds(odxFile)
+# def test_RDBI_minMaxLength(monkeypatch, default_tp_config, default_uds_config):
+#     here = Path(__file__).parent
+#     odxFile = here.joinpath("minmaxlength.odx")
 
-    actual = uds.readDataByIdentifier("Dynamic_PartNumber")
+#     def mock_send(self, payload, functionalReq, tpWaitTime):
+#         assert payload == [0x22, 0x02, 0x94]
+#         assert functionalReq == False
+#         assert tpWaitTime == 0.01
+#         return False
 
-    # mock_send.assert_called_with([0x22, 0x02, 0x94], False, 0.01)
-    assert expected == actual
+#     def mock_return(self, timeout_s):
+#         # DID: 660 => 0x2 0x94 Termination: "Zero" Min: 1 Max: 15 Data: ABC0011223344
+#         return [
+#             0x62, # SID
+#             0x02, # DID
+#             0x94, # DID
+#             0x41, # DATA ...
+#             0x42,
+#             0x43,
+#             0x30,
+#             0x30,
+#             0x31,
+#             0x31,
+#             0x32,
+#             0x32,
+#             0x33,
+#             0x33,
+#             0x34,
+#             0x34,
+#             0x00 # Termination Char
+#         ]
+#     expected = {"PartNumber": "ABC0011223344"}
 
-
-def test_RDBI_minLengthOnly(monkeypatch, default_tp_config, default_uds_config):
-
-    here = Path(__file__).parent
-    odxFile = here.joinpath("minlengthonly.odx")
-
-    def mock_send(self, payload, functionalReq, tpWaitTime):
-        assert payload == [0x22, 0x02, 0x94]
-        assert functionalReq == False
-        assert tpWaitTime == 0.01
-
-        return False
-
-    def mock_return(self, timeout_s):
-        # DID: 660 => 0x2 0x94 Termination: "end-of-pdu" Min: 1 Data: ABC0011223344
-        return [
-            0x62, # SID
-            0x02, # DID
-            0x94, # DID
-            0x41, # DATA ...
-            0x42,
-            0x43,
-            0x30,
-            0x30,
-            0x31,
-            0x31,
-            0x32,
-            0x32,
-            0x33,
-            0x33,
-            0x34,
-            0x34,
-        ] # no Termination Char for end-of-pdu
-    expected = {"PartNumber": "ABC0011223344"}
-
-    monkeypatch.setattr(CanTp, "send", mock_send)
-    monkeypatch.setattr(CanTp, "recv", mock_return)
+#     monkeypatch.setattr(CanTp, "send", mock_send)
+#     monkeypatch.setattr(CanTp, "recv", mock_return)
 
 
-    Config.load_com_layer_config(default_tp_config, default_uds_config)
-    uds = Uds(odxFile)
+#     Config.load_com_layer_config(default_tp_config, default_uds_config)
+#     uds = Uds(odxFile)
 
-    actual = uds.readDataByIdentifier("Dynamic_PartNumber")
+#     actual = uds.readDataByIdentifier("Dynamic_PartNumber")
 
-    assert expected == actual
+#     assert expected == actual
+
+
+# def test_RDBI_minLengthOnly(monkeypatch, default_tp_config, default_uds_config):
+
+#     here = Path(__file__).parent
+#     odxFile = here.joinpath("minlengthonly.odx")
+
+#     def mock_send(self, payload, functionalReq, tpWaitTime):
+#         assert payload == [0x22, 0x02, 0x94]
+#         assert functionalReq == False
+#         assert tpWaitTime == 0.01
+
+#         return False
+
+#     def mock_return(self, timeout_s):
+#         # DID: 660 => 0x2 0x94 Termination: "end-of-pdu" Min: 1 Data: ABC0011223344
+#         return [
+#             0x62, # SID
+#             0x02, # DID
+#             0x94, # DID
+#             0x41, # DATA ...
+#             0x42,
+#             0x43,
+#             0x30,
+#             0x30,
+#             0x31,
+#             0x31,
+#             0x32,
+#             0x32,
+#             0x33,
+#             0x33,
+#             0x34,
+#             0x34,
+#         ] # no Termination Char for end-of-pdu
+#     expected = {"PartNumber": "ABC0011223344"}
+
+#     monkeypatch.setattr(CanTp, "send", mock_send)
+#     monkeypatch.setattr(CanTp, "recv", mock_return)
+
+
+#     Config.load_com_layer_config(default_tp_config, default_uds_config)
+#     uds = Uds(odxFile)
+
+#     actual = uds.readDataByIdentifier("Dynamic_PartNumber")
+
+#     assert expected == actual
 
 # def test_RDBI_singleDIDmixedResponse(monkeypatch, default_tp_config, default_uds_config):
 #     here = Path(__file__).parent
@@ -231,60 +229,62 @@ def test_RDBI_minLengthOnly(monkeypatch, default_tp_config, default_uds_config):
 #     assert expected == actual
 
 
-# def test_RDBI_multipleDIDs(monkeypatch, default_tp_config, default_uds_config):
-#     here = Path(__file__).parent
-#     odxFile = here.joinpath("Bootloader.odx")
+def test_RDBI_multipleDIDs(monkeypatch, default_tp_config, default_uds_config):
+    here = Path(__file__).parent
+    odxFile = here.joinpath("Bootloader.odx")
 
-#     def mock_send(self, payload, functionalReq, tpWaitTime):
-#         assert payload == [0x22, 0xF1, 0x80, ]
-#         assert functionalReq == False
-#         assert tpWaitTime == 0.01
+    def mock_send(self, payload, functionalReq, tpWaitTime):
+        # Boot Software Version Number DID: 0xF1 0x09 = 61705
+        # ECU Serial Number DID: 0xF1 0x8C = 61836
+        assert payload == [0x22, 0xF1, 0x8C, 0xF1, 0x09]
+        assert functionalReq == False
+        assert tpWaitTime == 0.01
 
-#         return False
+        return False
 
-#     def mock_return(self, timeout_s):
-#         # numberOfModules = 0x01   (1 bytes as specified in "_Bootloader_1")
-#         # Boot Software Identification = "SwId12345678901234567890"   (24 bytes as specified in "_Bootloader_71")
-#         return [
-#             0x62, # SID
-#             0xF1, # DID
-#             0x80, # DID
-#             0x01,
-#             0x53,
-#             0x77,
-#             0x49,
-#             0x64,
-#             0x31,
-#             0x32,
-#             0x33,
-#             0x34,
-#             0x35,
-#             0x36,
-#             0x37,
-#             0x38,
-#             0x39,
-#             0x30,
-#             0x31,
-#             0x32,
-#             0x33,
-#             0x34,
-#             0x35,
-#             0x36,
-#             0x37,
-#             0x38,
-#             0x39,
-#             0x30,
-#         ]
-#     expected = {
+    def mock_return(self, timeout_s):
+        # Boot Software Version Number = "111"   (3 bytes/ 24 bits as specified in "_Bootloader_40")
+        # ECU Serial Number = "ABC0011223344556"   (16 bytes/ 128 bits as specified in "_Bootloader_87")
+        return [
+            0x62, # SID
+            0xF1, # DID 1
+            0x8C, # DID 1
+            0x41,
+            0x42,
+            0x43,
+            0x30,
+            0x30,
+            0x31,
+            0x31,
+            0x32,
+            0x32,
+            0x33,
+            0x33,
+            0x34,
+            0x34,
+            0x35,
+            0x35,
+            0x36,
+            0xF1, # DID 2
+            0x09, # DID 2
+            0x31,
+            0x31,
+            0x31,
+        ] # len = 24 (1 SID, 2 DID, 16 DATA, 2 DID, 3 DATA)
 
-#     },
+    expected = (
+        {"ECU_Serial_Number": "ABC0011223344556"},
+        {"Boot_Software_Version_Number": "111"}
+    )
 
-#     monkeypatch.setattr(CanTp, "send", mock_send)
-#     monkeypatch.setattr(CanTp, "recv", mock_return)
 
-#     Config.load_com_layer_config(default_tp_config, default_uds_config)
-#     uds = Uds(odxFile)
+    monkeypatch.setattr(CanTp, "send", mock_send)
+    monkeypatch.setattr(CanTp, "recv", mock_return)
 
-#     actual = uds.readDataByIdentifier(["Ecu Serial Number", "Boot Software Version Number"])
+    Config.load_com_layer_config(default_tp_config, default_uds_config)
+    uds = Uds(odxFile)
 
-#     assert expected == actual
+    actual = uds.readDataByIdentifier(["ECU Serial Number", "Boot Software Version Number"])
+
+    #assert expected[0] == actual[0]  # passes
+    assert expected[1] == actual[1]

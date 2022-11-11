@@ -151,7 +151,7 @@ class ReadDataByIdentifierContainer(object):
         logging.info(f"SIDLength: {SIDLength}")
         # remove sid from response for further parsing the did responses
         responseRemaining = response[SIDLength:]
-        checkTotalResponseLength(responseRemaining, expectedResponseTypes)
+        #checkTotalResponseLength(responseRemaining, expectedResponseTypes)
 
         # We've passed the length check, so check each element (which has to be present if the length is ok) ...
         expectedResponses = expectedResponseTypes[:]  # copy

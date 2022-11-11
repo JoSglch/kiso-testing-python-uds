@@ -27,24 +27,27 @@ class PosResponse():
         :return: parsed response as string
         """
         # remove the did before parsing -> TODO: insert DID check here?
-        toParse = DIDResponse[self.didLength: ]
-        # remove termination char
-        # END-OF-PDU type has no termination char
+        toDecode = DIDResponse[self.didLength: ]
+        # remove termination char, END-OF-PDU type has no termination char
         if isinstance(self.param.diagCodedType, MinMaxLengthType) and self.param.diagCodedType.termination.value != "END-OF-PDU":
             terminationCharLength = self.param.diagCodedType.getTerminationLength()
-            toParse = toParse[ :-terminationCharLength]
+            toDecode = toDecode[ :-terminationCharLength]
         encodingType = self.param.diagCodedType.base_data_type
         if encodingType == "A_ASCIISTRING":
             logging.info(f"Trying to decode A_ASCIISTRING:")
-            parsedResponse = DecodeFunctions.intListToString(toParse, None)
+            decodedResponse = DecodeFunctions.intListToString(toDecode, None)
+            logging.info(f"decoded ascii: {decodedResponse}")
         elif encodingType == "A_UINT32":
             logging.info(f"Trying to decode A_UINT32:")
-            parsedResponse = toParse
+            # nothing to decode
+            decodedResponse = toDecode
+            logging.info(f"decoded uint32: {decodedResponse}")
         else:
             logging.info(f"Trying to decode another encoding type:")
-            parsedResponse = toParse
+            # nothing to decode
+            raise NotImplementedError(f"Decoding of {encodingType} is not implemented yet")
 
-        return {self.param.short_name: parsedResponse}
+        return {self.param.short_name: decodedResponse}
 
     # not used atm
     def getTotalPossibleLength(self) -> Tuple[int, int]:
