@@ -146,7 +146,7 @@ class ReadDataByIdentifierContainer(object):
         # We have a positive response so check that it makes sense to us ...
 
         # Check SID and take it from first expected response (they all have the same)
-        expectedResponseTypes[0].checkSID(response)
+        expectedResponseTypes[0].checkSIDInResponse(response)
         SIDLength = expectedResponseTypes[0].sidLength
         logging.info(f"SIDLength: {SIDLength}")
         # remove sid from response for further parsing the did responses
@@ -164,7 +164,7 @@ class ReadDataByIdentifierContainer(object):
                 expectedResponses,
             ) = popResponseElement(responseRemaining, expectedResponses)
             # TODO: call DID check function on the object
-            expectedResponseTypes[i].checkDID(DIDResponseComponent)
+            expectedResponseTypes[i].checkDIDInResponse(DIDResponseComponent)
             DIDresponses.append(DIDResponseComponent)
         logging.info(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...

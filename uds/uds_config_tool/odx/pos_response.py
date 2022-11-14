@@ -3,13 +3,12 @@ from typing import Dict, List, Tuple
 
 from uds.uds_config_tool import DecodeFunctions
 from uds.uds_config_tool.odx.diag_coded_types import (MinMaxLengthType,
-                                                      StandardLengthType,
-)
+                                                      StandardLengthType)
 from uds.uds_config_tool.odx.param import Param
 
 
 class PosResponse():
-    """encapsulates param and DID + SID information for parsing  a positive uds response
+    """encapsulates params and DID + SID information for parsing  a positive uds response
     """
 
     def __init__(self, param: Param, didLength: int, DID: int, sidLength: int, SID: int) -> None:
@@ -19,14 +18,14 @@ class PosResponse():
         self.sidLength = sidLength
         self.SID = SID
 
-
+    # TODO: handle list of params
     def decode(self, DIDResponse: List[int]) -> Dict[str, str]:
         """Parse a response to a DID
 
         :param DIDResponse: response component for this PosResponse's DID
         :return: parsed response as string
         """
-        # remove the did before parsing -> TODO: insert DID check here?
+        # TODO: insert DID check here?
         toDecode = DIDResponse[self.didLength: ]
         # remove termination char, END-OF-PDU type has no termination char
         if isinstance(self.param.diagCodedType, MinMaxLengthType) and self.param.diagCodedType.termination.value != "END-OF-PDU":
@@ -39,36 +38,20 @@ class PosResponse():
             logging.info(f"decoded ascii: {decodedResponse}")
         elif encodingType == "A_UINT32":
             logging.info(f"Trying to decode A_UINT32:")
-            # nothing to decode
+            # TODO: how to decode?
             decodedResponse = toDecode
             logging.info(f"decoded uint32: {decodedResponse}")
         else:
             logging.info(f"Trying to decode another encoding type:")
-            # nothing to decode
+            # TODO: how to decode?
             raise NotImplementedError(f"Decoding of {encodingType} is not implemented yet")
+        result = {self.param.short_name: decodedResponse}
+        logging.info(f"Decoded result: {result}")
 
-        return {self.param.short_name: decodedResponse}
-
-    # not used atm
-    def getTotalPossibleLength(self) -> Tuple[int, int]:
-        """Return DIDLength + DATA length for range of poss byte lengths
-        """
-        totalMinLength = self.didLength
-        totalMaxLength = self.didLength
-
-        if isinstance(self.param, StandardLengthType):
-            totalMinLength += self.param.bitLength
-            totalMaxLength += self.param.bitLength
-        elif isinstance(self.param, MinMaxLengthType):
-            if self.param.minLength is not None:
-                totalMinLength += self.param.minLength
-            if self.param.maxLength is not None:
-                totalMaxLength += self.param.maxLength
-
-        return tuple([totalMinLength, totalMaxLength])
+        return result
 
 
-    def checkDID(self, didResponse: List[int]) -> None:
+    def checkDIDInResponse(self, didResponse: List[int]) -> None:
         """compare PosResponse's DID with the DID at beginning of a response
         """
         logging.info(f"Check beginning of passed response for DID")
@@ -77,7 +60,7 @@ class PosResponse():
             raise AttributeError(f"The expected DID {self.DID} does not match the received DID {actualDID}")
 
 
-    def checkSID(self, response: List[int]) -> None:
+    def checkSIDInResponse(self, response: List[int]) -> None:
         """compare PosResponse's SID with the SID at beginning of a response
         """
         actualSID = DecodeFunctions.buildIntFromList(response[:self.sidLength])
