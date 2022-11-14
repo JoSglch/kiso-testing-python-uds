@@ -39,12 +39,12 @@ class Param():
             logging.debug(f"decoded ascii: {decodedResponse}")
         elif encodingType == "A_UINT32":
             logging.debug("Trying to decode A_UINT32:")
-            # TODO: is there decoding needed?
+            # no decoding needed?
             decodedResponse = toDecode
             logging.debug(f"decoded uint32: {decodedResponse}")
         else:
             logging.debug("Trying to decode another encoding type:")
-            # TODO: is there decoding needed?
+            # no decoding needed?
             decodedResponse = toDecode
             logging.debug(f"other decodedResponse: {decodedResponse}")
         return decodedResponse

@@ -108,28 +108,19 @@ class ReadDataByIdentifierContainer(object):
         # SID is the same for all expected PosResponses, just take the first
         expectedResponseObjects[0].checkSIDInResponse(response)
         SIDLength = expectedResponseObjects[0].sidLength
-        logging.debug(f"SIDLength: {SIDLength}")
         # remove SID from response for further parsing the response per DID/ PosResponse
         responseRemaining = response[SIDLength:]
-        # TODO: refactor this? DIDresponses/ DIDResponseComponents not needed for decoding anymore
-        expectedResponses = expectedResponseObjects[:]  # copy
-        DIDresponses: List[List[int]] = []
-        for i in range(len(expectedResponseObjects)):
-            (
-                DIDResponseComponent,
-                responseRemaining,
-                expectedResponses,
-            ) = popResponseElement(responseRemaining, expectedResponses)
-            expectedResponseObjects[i].checkDIDInResponse(DIDResponseComponent)
-            DIDresponses.append(DIDResponseComponent)
-        logging.debug(f"Parsed partial response per DID: {DIDresponses}")
-        # All is still good, so return the response ...
+        # parse each expected DID response of the response and store its part of the data
+        for positiveResponse in expectedResponseObjects:
+            responseLength = positiveResponse.parseDIDResponseLength(responseRemaining)
+            responseRemaining = responseRemaining[responseLength:]
+        logging.debug(f"PosResponses after Parsing: {expectedResponseObjects}")
         logging.debug("----- Start response decoding ------")
-        logging.debug(f"Response Types after Parsing: {expectedResponseObjects}")
+        # after parsing each PARAM has its data and can decode it
         returnValue = tuple(
             [
-                expectedResponseObjects[i].decode()
-                for i in range(len(DIDresponses))
+                response.decode()
+                for response in expectedResponseObjects
             ]
         )
 

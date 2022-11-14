@@ -28,27 +28,32 @@ class PosResponse():
             result[param.short_name] = param.decode()
         return result
 
-    def parseDIDResponseComponent(self, response: List[int]) -> List[int]:
-        """parses the response component that contains this PosResponses data of the complete response
+    def parseDIDResponseLength(self, udsResponse: List[int]) -> List[int]:
+        """parses the response component that contains this PosResponses (DID) data of the front of the
+        passed udsResponse
 
-        stores the data parsed for each param as that params data
+        stores the data parsed for each PARAM as that PARAM's data
+
+        :param udsResponse: the (remaining) uds response
         """
+        self.checkDIDInResponse(udsResponse)
         startPosition = self.didLength
         endPosition = self.didLength
         for param in self.params:
-            logging.debug(f"startposition: {startPosition}")
-            toParse = response[startPosition:]
+            logging.debug(f"startPosition: {startPosition}")
+            toParse = udsResponse[startPosition:]
             paramLength = param.calculateLength(toParse)
             logging.debug(f"calculated length: {paramLength}")
             endPosition += paramLength
             logging.debug(f"endPosition: {endPosition}")
-            data = response[startPosition: endPosition]
+            data = udsResponse[startPosition: endPosition]
             logging.debug(f"data: {data}")
             # store data in param for decoding
             param.data = data
             startPosition = endPosition
-        result = response[:endPosition]
-        logging.debug(f"calculated response comp: {result}")
+        # result = udsResponse[:endPosition]
+        # logging.debug(f"calculated response comp: {result}")
+        result = endPosition
         return result
 
     def checkDIDInResponse(self, didResponse: List[int]) -> None:

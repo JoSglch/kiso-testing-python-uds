@@ -272,8 +272,8 @@ def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, 
             # TODO: handle END-OF-PDU-FIELD?
             logging.debug("Found END-OF-PDU-FIELD")
         else:
-            # nested structure (if possible in ODX spec)
-            # TODO: recursively check structure: return getDiagCodedTypeFromStructure(nestedDop, xmlElements)
+            # nested structure (if possible in ODX spec):
+            # recursively check structure: return getDiagCodedTypeFromStructure(nestedDop, xmlElements)
             raise NotImplementedError(f"parsing of {nestedDop.tag} is not implemented")
     return diagCodedType
 
