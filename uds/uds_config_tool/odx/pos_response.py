@@ -19,11 +19,11 @@ class PosResponse():
         self.SID = SID
 
     # TODO: handle list of params
-    def decode(self, DIDResponse: List[int]) -> Dict[str, str]:
-        """Parse a response to a DID
+    def decode(self) -> Dict[str, str]:
+        """Decode the data stored in this PosResponses params
 
-        :param DIDResponse: response component for this PosResponse's DID
-        :return: dictionary of parsed responses with short name as key
+        :throws: ValueError if no data to decode in param
+        :return: dictionary with the params short name as key and the decoded data as value
         """
         result = {}
         # maybe add DID check here?
@@ -34,6 +34,8 @@ class PosResponse():
 
     def parseDIDResponseComponent(self, response: List[int]) -> List[int]:
         """parses the response component that contains this PosResponses data of the complete response
+
+        stores the data parsed for each param as that params data
         """
         # safe the data for each param in the param here instead of returning a list?
         logging.info(f"getDIDResponseComp: response {response}")

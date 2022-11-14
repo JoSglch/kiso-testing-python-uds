@@ -229,87 +229,27 @@ def default_uds_config():
 #     assert expected == actual
 
 
-# def test_RDBI_multipleDIDs(monkeypatch, default_tp_config, default_uds_config):
-#     here = Path(__file__).parent
-#     odxFile = here.joinpath("Bootloader.odx")
-
-#     def mock_send(self, payload, functionalReq, tpWaitTime):
-#         # Boot Software Version Number DID: 0xF1 0x09 = 61705
-#         # ECU Serial Number DID: 0xF1 0x8C = 61836
-#         assert payload == [0x22, 0xF1, 0x8C, 0xF1, 0x09]
-#         assert functionalReq == False
-#         assert tpWaitTime == 0.01
-
-#         return False
-
-#     def mock_return(self, timeout_s):
-#         # Boot Software Version Number = "111"   (3 bytes/ 24 bits as specified in "_Bootloader_40")
-#         # ECU Serial Number = "ABC0011223344556"   (16 bytes/ 128 bits as specified in "_Bootloader_87")
-#         return [
-#             0x62, # SID
-#             0xF1, # DID 1
-#             0x8C, # DID 1
-#             0x41,
-#             0x42,
-#             0x43,
-#             0x30,
-#             0x30,
-#             0x31,
-#             0x31,
-#             0x32,
-#             0x32,
-#             0x33,
-#             0x33,
-#             0x34,
-#             0x34,
-#             0x35,
-#             0x35,
-#             0x36,
-#             0xF1, # DID 2
-#             0x09, # DID 2
-#             0x31,
-#             0x31,
-#             0x31,
-#         ] # len = 24 (1 SID, 2 DID, 16 DATA, 2 DID, 3 DATA)
-
-#     expected = (
-#         {"ECU_Serial_Number": "ABC0011223344556"},
-#         {"Boot_Software_Version_Number": "111"}
-#     )
-
-
-#     monkeypatch.setattr(CanTp, "send", mock_send)
-#     monkeypatch.setattr(CanTp, "recv", mock_return)
-
-#     Config.load_com_layer_config(default_tp_config, default_uds_config)
-#     uds = Uds(odxFile)
-
-#     actual = uds.readDataByIdentifier(["ECU Serial Number", "Boot Software Version Number"])
-
-#     #assert expected[0] == actual[0]  # passes
-#     assert expected[1] == actual[1]
-
-def test_rdbiMultipleDIDMixedResponse(monkeypatch, default_tp_config, default_uds_config):
-
+def test_RDBI_multipleDIDs(monkeypatch, default_tp_config, default_uds_config):
     here = Path(__file__).parent
     odxFile = here.joinpath("Bootloader.odx")
 
     def mock_send(self, payload, functionalReq, tpWaitTime):
-        assert payload == [0x22, 0xF1, 0x8C, 0xF1, 0x80]
+        # Boot Software Version Number DID: 0xF1 0x09 = 61705
+        # ECU Serial Number DID: 0xF1 0x8C = 61836
+        assert payload == [0x22, 0xF1, 0x8C, 0xF1, 0x09]
         assert functionalReq == False
         assert tpWaitTime == 0.01
 
         return False
 
     def mock_return(self, timeout_s):
-    # ECU Serial Number = "ABC0011223344556"   (16 bytes as specified in "_Bootloader_87")
-    # numberOfModules = 0x01   (1 bytes as specified in "_Bootloader_1")
-    # Boot Software Identification = "SwId12345678901234567890"   (24 bytes as specified in "_Bootloader_71")
+        # Boot Software Version Number = "111"   (3 bytes/ 24 bits as specified in "_Bootloader_40")
+        # ECU Serial Number = "ABC0011223344556"   (16 bytes/ 128 bits as specified in "_Bootloader_87")
         return [
             0x62, # SID
             0xF1, # DID 1
             0x8C, # DID 1
-            0x41, # Data ...
+            0x41,
             0x42,
             0x43,
             0x30,
@@ -326,42 +266,17 @@ def test_rdbiMultipleDIDMixedResponse(monkeypatch, default_tp_config, default_ud
             0x35,
             0x36,
             0xF1, # DID 2
-            0x80, # DID 2
-            0x01, # Data 1
-            0x53, # Data 2 ...
-            0x77,
-            0x49,
-            0x64,
-            0x31,
-            0x32,
-            0x33,
-            0x34,
-            0x35,
-            0x36,
-            0x37,
-            0x38,
-            0x39,
-            0x30,
-            0x31,
-            0x32,
-            0x33,
-            0x34,
-            0x35,
-            0x36,
-            0x37,
-            0x38,
-            0x39,
-            0x30,
-        ]
-    # size 46: 1 (SID) 2 (DID 1) 16 (Data) 2 (DID 2) 1 (Data 1) 24 (Data 2)
+            0x09, # DID 2
+            0x01,
+            0x01,
+            0x01,
+        ] # len = 24 (1 SID, 2 DID, 16 DATA, 2 DID, 3 DATA)
 
     expected = (
         {"ECU_Serial_Number": "ABC0011223344556"},
-        {
-            "numberOfModules": [0x01],
-            "Boot_Software_Identification": "SwId12345678901234567890"
-        },
+        {"Boot_Software_Version_Number": [1, 1, 1]}
     )
+
 
     monkeypatch.setattr(CanTp, "send", mock_send)
     monkeypatch.setattr(CanTp, "recv", mock_return)
@@ -369,7 +284,91 @@ def test_rdbiMultipleDIDMixedResponse(monkeypatch, default_tp_config, default_ud
     Config.load_com_layer_config(default_tp_config, default_uds_config)
     uds = Uds(odxFile)
 
-    actual = uds.readDataByIdentifier(["ECU Serial Number", "Boot Software Identification"])
+    actual = uds.readDataByIdentifier(["ECU Serial Number", "Boot Software Version Number"])
 
-    assert expected == actual
+    #assert expected[0] == actual[0]  # passes
+    assert expected[1] == actual[1]
+
+# def test_RDBI_multipleDIDMixedResponse(monkeypatch, default_tp_config, default_uds_config):
+
+#     here = Path(__file__).parent
+#     odxFile = here.joinpath("Bootloader.odx")
+
+#     def mock_send(self, payload, functionalReq, tpWaitTime):
+#         assert payload == [0x22, 0xF1, 0x8C, 0xF1, 0x80]
+#         assert functionalReq == False
+#         assert tpWaitTime == 0.01
+
+#         return False
+
+#     def mock_return(self, timeout_s):
+#     # ECU Serial Number = "ABC0011223344556"   (16 bytes as specified in "_Bootloader_87")
+#     # numberOfModules = 0x01   (1 bytes as specified in "_Bootloader_1")
+#     # Boot Software Identification = "SwId12345678901234567890"   (24 bytes as specified in "_Bootloader_71")
+#         return [
+#             0x62, # SID
+#             0xF1, # DID 1
+#             0x8C, # DID 1
+#             0x41, # Data ...
+#             0x42,
+#             0x43,
+#             0x30,
+#             0x30,
+#             0x31,
+#             0x31,
+#             0x32,
+#             0x32,
+#             0x33,
+#             0x33,
+#             0x34,
+#             0x34,
+#             0x35,
+#             0x35,
+#             0x36,
+#             0xF1, # DID 2
+#             0x80, # DID 2
+#             0x01, # Data 1
+#             0x53, # Data 2 ...
+#             0x77,
+#             0x49,
+#             0x64,
+#             0x31,
+#             0x32,
+#             0x33,
+#             0x34,
+#             0x35,
+#             0x36,
+#             0x37,
+#             0x38,
+#             0x39,
+#             0x30,
+#             0x31,
+#             0x32,
+#             0x33,
+#             0x34,
+#             0x35,
+#             0x36,
+#             0x37,
+#             0x38,
+#             0x39,
+#             0x30,
+#         ] # size 46 (1 SID, 2 DID, 16  Data, 2 DID, 1 Data, 24 Data)
+
+#     expected = (
+#         {"ECU_Serial_Number": "ABC0011223344556"},
+#         {
+#             "numberOfModules": [0x01],
+#             "Boot_Software_Identification": "SwId12345678901234567890"
+#         },
+#     )
+
+#     monkeypatch.setattr(CanTp, "send", mock_send)
+#     monkeypatch.setattr(CanTp, "recv", mock_return)
+
+#     Config.load_com_layer_config(default_tp_config, default_uds_config)
+#     uds = Uds(odxFile)
+
+#     actual = uds.readDataByIdentifier(["ECU Serial Number", "Boot Software Identification"])
+
+#     assert expected == actual
 

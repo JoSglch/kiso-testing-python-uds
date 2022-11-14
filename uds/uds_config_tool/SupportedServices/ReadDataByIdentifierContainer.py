@@ -146,9 +146,7 @@ class ReadDataByIdentifierContainer(object):
         logging.info(f"SIDLength: {SIDLength}")
         # remove sid from response for further parsing the did responses
         responseRemaining = response[SIDLength:]
-        #checkTotalResponseLength(responseRemaining, expectedResponseTypes)
 
-        # We've passed the length check, so check each element (which has to be present if the length is ok) ...
         expectedResponses = expectedResponseTypes[:]  # copy
 
         DIDresponses: List[List[int]] = []
@@ -158,7 +156,6 @@ class ReadDataByIdentifierContainer(object):
                 responseRemaining,
                 expectedResponses,
             ) = popResponseElement(responseRemaining, expectedResponses)
-            # TODO: call DID check function on the object
             expectedResponseTypes[i].checkDIDInResponse(DIDResponseComponent)
             DIDresponses.append(DIDResponseComponent)
         logging.info(f"Parsed partial response per DID: {DIDresponses}")
@@ -168,7 +165,7 @@ class ReadDataByIdentifierContainer(object):
         logging.info(f"Response Types after Parsing: {expectedResponseTypes}")
         returnValue = tuple(
             [
-                expectedResponseTypes[i].decode(DIDresponses[i])
+                expectedResponseTypes[i].decode()
                 for i in range(len(DIDresponses))
             ]
         )
