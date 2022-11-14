@@ -96,26 +96,29 @@ class MinMaxLengthType(DiagCodedType):
         :return: length in bytes as int
         """
         logging.info(f"passed response: {response}")
+        logging.info(f"term value: {self.termination.value, type(self.termination.value)}")
         if self.termination.value != "END-OF-PDU":
             # ends after max length, at end of response or after termination char
             for dynamicLength, value in enumerate(response):
                 logging.info(f"dynamicLength: {dynamicLength}, value: {value}")
-                if value == self.termination and dynamicLength < self.minLength:
+                if value == self.termination.value and dynamicLength < self.minLength:
                     raise ValueError(f"Response shorter than expected minimum")
-                elif value == self.termination or dynamicLength == self.maxLength:
+                elif value == self.termination.value or dynamicLength == self.maxLength:
                     logging.info(f"Found termination char {self.termination} or reached max length {self.maxLength}")
                     logging.info(f"Length at end condition: {dynamicLength}")
                     # TODO: does it ALWAYS have a termination char, even if max length used? -> handle separately:
                     # + 1 for termination char, no + 1 for max length
-                    return dynamicLength + 1 # account for termination char with + 1
+                    return dynamicLength + 1 # account for 0 indexing
                 elif self.maxLength is not None and dynamicLength > self.maxLength:
                     raise ValueError(f"Response longer than expected max length")
         # END-OF-PDU: response ends after max-length or at response end
         else:
             if self.maxLength is None:
+                logging.info(f"no maxlength, length is whole response")
                 return len(response)
             else:
                 # go through response till end or max length (whichever comes first)
+                logging.info(f" max length or len(response), what ever is smaller")
                 return min(self.maxLength, len(response))
 
 

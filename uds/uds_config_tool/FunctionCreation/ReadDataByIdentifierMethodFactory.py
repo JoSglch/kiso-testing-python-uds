@@ -99,7 +99,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         diagnosticId = 0
         SIDLength = 0
         DIDLength = 0
-        params: List[Param] = None
+        params: List[Param] = []
         param: Param = None
         # TODO: add handling of multiple data params -> have a list of params in PosResponse
         for paramElement in paramsElement:
@@ -140,12 +140,14 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     ]
                     if dataObjectElement.tag == "DATA-OBJECT-PROP":
                         diagCodedType = getDiagCodedTypeFromDop(dataObjectElement)
+
                     elif dataObjectElement.tag == "STRUCTURE":
                         diagCodedType = getDiagCodedTypeFromStructure(dataObjectElement, xmlElements)
                     else:
                         # neither DOP nor STRUCTURE
                         pass
                     param: Param = Param(short_name, byte_position, diagCodedType)
+                    params.append(param)
                     logging.info(f"params list: {params}")
                 else:
                     # not a PARAM with SID, ID (= DID), or DATA
@@ -155,7 +157,9 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                 pass
 
         # instead of checkDIDLenFunc and all the others (also can get rid of other check functions):
-        posResponse = PosResponse(param, DIDLength, diagnosticId, SIDLength, responseId)
+        
+        # posResponse = PosResponse(param, DIDLength, diagnosticId, SIDLength, responseId)
+        posResponse = PosResponse(params, DIDLength, diagnosticId, SIDLength, responseId)
         logging.info(f"posResponse: {posResponse}")
         return posResponse
 

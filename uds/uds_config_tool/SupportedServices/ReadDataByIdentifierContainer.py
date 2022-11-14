@@ -85,14 +85,9 @@ class ReadDataByIdentifierContainer(object):
                     "Total length returned not as expected. Missing elements."
                 )
             result = None
-            # take the next responseType and calculate its length in the response
-            responseType: DiagCodedType = expectedResponseList[0].param.diagCodedType
-            # DIDLength + DATA type length
-            length = responseType.calculateLength(input) + expectedResponseList[0].didLength
-            logging.info(f"calculated length: {length}")
-            DIDResponseComponent: List[int] = input[: length]
-            logging.info(f"calculated response comp: {DIDResponseComponent}")
-
+            # take the next PosResponse and its DIDResponseComponent
+            DIDResponseComponent: List[int] = expectedResponseList[0].parseDIDResponseComponent(input)
+            length = len(DIDResponseComponent)
             result = (
                 DIDResponseComponent,
                 input[length: ],
@@ -168,7 +163,9 @@ class ReadDataByIdentifierContainer(object):
             DIDresponses.append(DIDResponseComponent)
         logging.info(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...
+        # TODO: in whcih responses are the params set?
         logging.info(f"----- Start response decoding ------")
+        logging.info(f"Response Types after Parsing: {expectedResponseTypes}")
         returnValue = tuple(
             [
                 expectedResponseTypes[i].decode(DIDresponses[i])

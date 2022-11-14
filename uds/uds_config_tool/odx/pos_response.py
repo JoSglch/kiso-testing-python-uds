@@ -11,8 +11,8 @@ class PosResponse():
     """encapsulates params and DID + SID information for parsing  a positive uds response
     """
 
-    def __init__(self, param: Param, didLength: int, DID: int, sidLength: int, SID: int) -> None:
-        self.param = param
+    def __init__(self, params: List[Param], didLength: int, DID: int, sidLength: int, SID: int) -> None:
+        self.params = params
         self.didLength = didLength
         self.DID = DID
         self.sidLength = sidLength
@@ -23,33 +23,38 @@ class PosResponse():
         """Parse a response to a DID
 
         :param DIDResponse: response component for this PosResponse's DID
-        :return: parsed response as string
+        :return: dictionary of parsed responses with short name as key
         """
-        # TODO: insert DID check here?
-        toDecode = DIDResponse[self.didLength: ]
-        # remove termination char, END-OF-PDU type has no termination char
-        if isinstance(self.param.diagCodedType, MinMaxLengthType) and self.param.diagCodedType.termination.value != "END-OF-PDU":
-            terminationCharLength = self.param.diagCodedType.getTerminationLength()
-            toDecode = toDecode[ :-terminationCharLength]
-        encodingType = self.param.diagCodedType.base_data_type
-        if encodingType == "A_ASCIISTRING":
-            logging.info(f"Trying to decode A_ASCIISTRING:")
-            decodedResponse = DecodeFunctions.intListToString(toDecode, None)
-            logging.info(f"decoded ascii: {decodedResponse}")
-        elif encodingType == "A_UINT32":
-            logging.info(f"Trying to decode A_UINT32:")
-            # TODO: how to decode?
-            decodedResponse = toDecode
-            logging.info(f"decoded uint32: {decodedResponse}")
-        else:
-            logging.info(f"Trying to decode another encoding type:")
-            # TODO: how to decode?
-            raise NotImplementedError(f"Decoding of {encodingType} is not implemented yet")
-        result = {self.param.short_name: decodedResponse}
-        logging.info(f"Decoded result: {result}")
-
+        result = {}
+        # maybe add DID check here?
+        for param in self.params:
+            result[param.short_name] = param.decode()
+            logging.info(f"Decoded result: {result}")
         return result
 
+    def parseDIDResponseComponent(self, response: List[int]) -> List[int]:
+        """parses the response component that contains this PosResponses data of the complete response
+        """
+        # safe the data for each param in the param here instead of returning a list?
+        logging.info(f"getDIDResponseComp: response {response}")
+        startPosition = self.didLength
+        endPosition = self.didLength
+        for param in self.params:
+            logging.info(f"startposition: {startPosition}")
+            toParse = response[startPosition: ]
+            logging.info(f"toParse in loop: {toParse}")
+            paramLength = param.calculateLength(toParse)
+            logging.info(f"calculated length: {paramLength}")
+            endPosition += paramLength
+            logging.info(f"endPosition: {endPosition}")
+            data = response[startPosition: endPosition]
+            logging.info(f"data: {data}")
+            param.data = data
+            logging.info(f"param with data: {param}")
+            startPosition = endPosition
+        result = response[:endPosition]
+        logging.info(f"calculated response comp: {result}")
+        return result
 
     def checkDIDInResponse(self, didResponse: List[int]) -> None:
         """compare PosResponse's DID with the DID at beginning of a response
@@ -69,4 +74,4 @@ class PosResponse():
 
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}: param={self.param}, didLength={self.didLength}, DID={self.DID}"
+        return f"{self.__class__.__name__}: param={self.params}, didLength={self.didLength}, DID={self.DID}"
