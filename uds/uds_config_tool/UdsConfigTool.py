@@ -258,7 +258,7 @@ class UdsTool:
                             value, xmlElements
                         )
                     )
-                    logging.info(f"humanName: {humanName}")
+                    logging.debug(f"humanName: {humanName}")
                     cls.rdbiContainer.add_requestSIDFunction(
                         requestFunctions[0], humanName
                     )  # ... note: this will now need to handle replication of this one!!!!
@@ -270,11 +270,11 @@ class UdsTool:
                     cls.rdbiContainer.add_negativeResponseFunction(
                         negativeResponseFunction, humanName
                     )
-                    logging.info(f"Binding in UdsConfigTool")
+                    logging.debug("Binding in UdsConfigTool")
                     posResponse = ReadDataByIdentifierMethodFactory.create_checkPositiveResponseFunctions(
                         value, xmlElements
                     )
-                    logging.info(f"posResponseObject: {posResponse}")
+                    logging.debug(f"posResponseObject: {posResponse}")
                     cls.rdbiContainer.add_posResponseObject(posResponse, humanName)
 
                     if cls.rdbiContainer not in UdsContainerAccess.containers:

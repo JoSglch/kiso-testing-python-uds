@@ -84,14 +84,14 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
 
     @staticmethod
     def create_checkPositiveResponseFunctions(diagServiceElement, xmlElements):
-        logging.info(f"----- create_checkPositiveResponseFunctions() -----")
+        logging.debug("----- create_checkPositiveResponseFunctions() -----")
 
         positiveResponseElement = xmlElements[
             (diagServiceElement.find("POS-RESPONSE-REFS"))
             .find("POS-RESPONSE-REF")
             .attrib["ID-REF"]
         ]
-        logging.info(positiveResponseElement.find("SHORT-NAME").text)
+        logging.debug(positiveResponseElement.find("SHORT-NAME").text)
         paramsElement = positiveResponseElement.find("PARAMS")
 
         # not needed?
@@ -111,30 +111,30 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     pass
 
                 short_name = (paramElement.find("SHORT-NAME")).text
-                logging.info(f"params short name: {short_name}")
+                logging.debug(f"params short name: {short_name}")
                 byte_position = int((paramElement.find("BYTE-POSITION")).text)
-                logging.info(f"params byte position: {byte_position}")
+                logging.debug(f"params byte position: {byte_position}")
 
                 if semantic == "SERVICE-ID":
-                    logging.info("PARAM: SID")
+                    logging.debug("PARAM: SID")
                     responseId = int(paramElement.find("CODED-VALUE").text)
                     bitLength = int(
                         (paramElement.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     SIDLength = int(bitLength / 8)
-                    logging.info(f"SIDLength: {SIDLength}")
+                    logging.debug(f"SIDLength: {SIDLength}")
                 elif semantic == "ID":
-                    logging.info("PARAM: ID")
+                    logging.debug("PARAM: ID")
                     diagnosticId = int(paramElement.find("CODED-VALUE").text)
                     bitLength = int(
                         (paramElement.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     DIDLength = int(bitLength / 8)
-                    logging.info(f"DIDLength: {DIDLength}")
+                    logging.debug(f"DIDLength: {DIDLength}")
                 elif semantic == "DATA":
                     diagCodedType: DiagCodedType = None
                     # need to parse the param for the DIAG CODED TYPE
-                    logging.info("PARAM: DATA")
+                    logging.debug("PARAM: DATA")
                     dataObjectElement = xmlElements[
                         (paramElement.find("DOP-REF")).attrib["ID-REF"]
                     ]
@@ -148,21 +148,16 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         pass
                     param: Param = Param(short_name, byte_position, diagCodedType)
                     params.append(param)
-                    logging.info(f"params list: {params}")
+                    logging.debug(f"params list: {params}")
                 else:
                     # not a PARAM with SID, ID (= DID), or DATA
                     pass
             except:
-                logging.warning(sys.exc_info())
-                pass
+                logging.debug(sys.exc_info())
 
-        # instead of checkDIDLenFunc and all the others (also can get rid of other check functions):
-        
-        # posResponse = PosResponse(param, DIDLength, diagnosticId, SIDLength, responseId)
         posResponse = PosResponse(params, DIDLength, diagnosticId, SIDLength, responseId)
-        logging.info(f"posResponse: {posResponse}")
+        logging.debug(f"posResponse: {posResponse}")
         return posResponse
-
 
     @staticmethod
     def create_checkNegativeResponseFunction(diagServiceElement, xmlElements):
@@ -215,7 +210,7 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                                 nrcElem.find("COMPU-CONST").find("VT").text
                             )
                     except:
-                        pass
+                        logging.debug(sys.exc_info())
                 pass
 
         negativeResponseFunctionString = negativeResponseFuncTemplate.format(

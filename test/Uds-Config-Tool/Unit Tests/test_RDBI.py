@@ -1,5 +1,5 @@
-from pathlib import Path
 import traceback
+from pathlib import Path
 
 import pytest
 
@@ -22,6 +22,7 @@ def default_tp_config():
     DEFAULT_TP_CONFIG["res_id"] = 0xb1
     return DEFAULT_TP_CONFIG
 
+
 @pytest.fixture
 def default_uds_config():
     DEFAULT_UDS_CONFIG = {
@@ -30,6 +31,7 @@ def default_uds_config():
         "p2_can_server": 1,
     }
     return DEFAULT_UDS_CONFIG
+
 
 def test_RDBI_staticLength(monkeypatch, default_tp_config, default_uds_config):
 
@@ -170,6 +172,7 @@ def test_RDBI_minLengthOnly(monkeypatch, default_tp_config, default_uds_config):
 
     assert expected == actual
 
+
 def test_RDBI_singleDIDmixedResponse(monkeypatch, default_tp_config, default_uds_config):
     here = Path(__file__).parent
     odxFile = here.joinpath("Bootloader.odx")
@@ -288,6 +291,7 @@ def test_RDBI_multipleDIDs(monkeypatch, default_tp_config, default_uds_config):
 
     assert expected == actual
 
+
 def test_RDBI_multipleDIDMixedResponse(monkeypatch, default_tp_config, default_uds_config):
 
     here = Path(__file__).parent
@@ -371,6 +375,7 @@ def test_RDBI_multipleDIDMixedResponse(monkeypatch, default_tp_config, default_u
 
     assert expected == actual
 
+
 def test_RDBI_negResponse0x13(monkeypatch, default_tp_config, default_uds_config):
 
     def mock_send(self, payload, functionalReq, tpWaitTime):
@@ -394,7 +399,6 @@ def test_RDBI_negResponse0x13(monkeypatch, default_tp_config, default_uds_config
     Config.load_com_layer_config(default_tp_config, default_uds_config)
     uds = Uds(odxFile)
 
-
     try:
         actual = uds.readDataByIdentifier(
             "ECU Serial Number"
@@ -402,6 +406,7 @@ def test_RDBI_negResponse0x13(monkeypatch, default_tp_config, default_uds_config
     except:
         actual = traceback.format_exc().split("\n")[-2:-1][0]  # extract the exception text
     assert expected == actual
+
 
 def test_RDBI_negResponse0x22(monkeypatch, default_tp_config, default_uds_config):
 
@@ -426,7 +431,6 @@ def test_RDBI_negResponse0x22(monkeypatch, default_tp_config, default_uds_config
     Config.load_com_layer_config(default_tp_config, default_uds_config)
     uds = Uds(odxFile)
 
-
     try:
         actual = uds.readDataByIdentifier(
             "ECU Serial Number"
@@ -434,6 +438,7 @@ def test_RDBI_negResponse0x22(monkeypatch, default_tp_config, default_uds_config
     except:
         actual = traceback.format_exc().split("\n")[-2:-1][0]  # extract the exception text
     assert expected == actual
+
 
 def test_RDBI_negResponse0x31(monkeypatch, default_tp_config, default_uds_config):
 
@@ -458,7 +463,6 @@ def test_RDBI_negResponse0x31(monkeypatch, default_tp_config, default_uds_config
     Config.load_com_layer_config(default_tp_config, default_uds_config)
     uds = Uds(odxFile)
 
-
     try:
         actual = uds.readDataByIdentifier(
             "ECU Serial Number"
@@ -466,6 +470,7 @@ def test_RDBI_negResponse0x31(monkeypatch, default_tp_config, default_uds_config
     except:
         actual = traceback.format_exc().split("\n")[-2:-1][0]  # extract the exception text
     assert expected == actual
+
 
 def test_RDBI_negResponse0x33(monkeypatch, default_tp_config, default_uds_config):
 
@@ -489,7 +494,6 @@ def test_RDBI_negResponse0x33(monkeypatch, default_tp_config, default_uds_config
 
     Config.load_com_layer_config(default_tp_config, default_uds_config)
     uds = Uds(odxFile)
-
 
     try:
         actual = uds.readDataByIdentifier(

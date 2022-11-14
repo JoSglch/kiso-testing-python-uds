@@ -7,8 +7,12 @@ from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
 
 
 class Param():
+    """represents a PARAM with its DIAG CODED TYPE, name, byte position and (optionally) data
 
-    def __init__(self, short_name: str, byte_position: int, diagCodedType: DiagCodedType, data = None):
+    data is set when parsing a uds response and can then be decoded
+    """
+
+    def __init__(self, short_name: str, byte_position: int, diagCodedType: DiagCodedType, data=None):
         self.short_name = short_name
         self.byte_position = byte_position
         self.diagCodedType = diagCodedType
@@ -18,31 +22,31 @@ class Param():
         return self.diagCodedType.calculateLength(response)
 
     def decode(self) -> str:
-        """decode internal data that is set after parsing a uds response
+        """decode Param's internal data that is set after parsing a uds response
         """
         if self.data is None:
-            raise ValueError(f"Data in param is None, check if data DID response was parsed correctly")
+            raise ValueError("Data in param is None, check if data DID response was parsed correctly")
         # there is data to decode
         toDecode = self.data
         # remove termination char, END-OF-PDU type has no termination char
         if isinstance(self.diagCodedType, MinMaxLengthType) and self.diagCodedType.termination.value != "END-OF-PDU":
             terminationCharLength = self.diagCodedType.getTerminationLength()
-            toDecode = self.data[ :-terminationCharLength]
+            toDecode = self.data[:-terminationCharLength]
         encodingType = self.diagCodedType.base_data_type
         if encodingType == "A_ASCIISTRING":
-            logging.info(f"Trying to decode A_ASCIISTRING:")
+            logging.debug("Trying to decode A_ASCIISTRING:")
             decodedResponse = DecodeFunctions.intListToString(toDecode, None)
-            logging.info(f"decoded ascii: {decodedResponse}")
+            logging.debug(f"decoded ascii: {decodedResponse}")
         elif encodingType == "A_UINT32":
-            logging.info(f"Trying to decode A_UINT32:")
+            logging.debug("Trying to decode A_UINT32:")
             # TODO: is there decoding needed?
             decodedResponse = toDecode
-            logging.info(f"decoded uint32: {decodedResponse}")
+            logging.debug(f"decoded uint32: {decodedResponse}")
         else:
-            logging.info(f"Trying to decode another encoding type:")
+            logging.debug("Trying to decode another encoding type:")
             # TODO: is there decoding needed?
             decodedResponse = toDecode
-            logging.info(f"other decodedResponse: {decodedResponse}")
+            logging.debug(f"other decodedResponse: {decodedResponse}")
         return decodedResponse
 
     def __repr__(self):

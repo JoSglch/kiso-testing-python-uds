@@ -14,9 +14,6 @@ import logging
 from types import MethodType
 from typing import List
 
-from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
-                                                      MinMaxLengthType,
-                                                      StandardLengthType)
 from uds.uds_config_tool.odx.pos_response import PosResponse
 from uds.uds_config_tool.SupportedServices.iContainer import iContainer
 
@@ -27,10 +24,10 @@ class ReadDataByIdentifierContainer(object):
 
     def __init__(self):
 
-        # To cater for lists we may have to re-factor here - i.e. requestFunc can be split into requestSIDFunc and requestDIDFunc to allow building on the fly from a DID list
+        # To cater for lists we may have to re-factor here - i.e. requestFunc can be split into
+        # requestSIDFunc and requestDIDFunc to allow building on the fly from a DID list
         # Negative response function is ok as it it
 
-        # self.requestFunctions = {}
         self.requestSIDFunctions = {}
         self.requestDIDFunctions = {}
 
@@ -44,39 +41,10 @@ class ReadDataByIdentifierContainer(object):
     # on this instance of the container class.
     @staticmethod
     def __readDataByIdentifier(target, parameter):
-        logging.info(f"===== readDataByIdentifier({target}, {parameter}) =====")
+        logging.debug(f"===== readDataByIdentifier({target}, {parameter}) =====")
         # Some local functions to deal with use concatenation of a number of DIDs in RDBI operation ...
 
-        # After an array of length types has been constructed for the individual response elements, we need a simple function to check it against the response
-        def checkTotalResponseLength(response: List[int], expectedResponseTypes: List[PosResponse]) -> None:
-            """Calculates a total minimum and maximum for valid response length range
-            """
-            logging.info(f"Checking length plausibility of response length")
-            totalMinLength = 0
-            totalMaxLength = 0
-            # TODO: how to handle MAX-LENGTH = None?
-            for responseType in expectedResponseTypes:
-                totalMinLength += responseType.didLength
-                totalMaxLength += responseType.didLength
-                if isinstance(responseType.param.diagCodedType, StandardLengthType):
-                    totalMinLength += responseType.param.diagCodedType.bitLength
-                    totalMaxLength += responseType.param.diagCodedType.bitLength
-                elif isinstance(responseType.param.diagCodedType, MinMaxLengthType):
-                    if responseType.param.diagCodedType.minLength is not None:
-                        totalMinLength += responseType.param.diagCodedType.minLength
-                    if responseType.param.diagCodedType.maxLength is not None:
-                        totalMaxLength += responseType.param.diagCodedType.maxLength
-                    else:
-                        # handle max-length == none -> no range calculation possible
-                        logging.info(f"Plausibility check not possible if max-length not given.")
-                        return
-            resultRange = (totalMinLength, totalMaxLength)
-
-            if len(response) < totalMinLength or len(response) > totalMaxLength:
-                raise ValueError(f"Expected response length range {resultRange} does not match received response length {len(response)}")
-            logging.info(f"Check passed, response length = {len(response)}, possible range = {resultRange}")
-
-        # The check functions just want to know about the next bit of the response, so this just pops it of the front of the response
+        # just want to know about the next bit of the response, so this pops it of the front of the response
         def popResponseElement(input, expectedResponseList: List[PosResponse]):
             """Parses the response into partial response for each DID
             """
@@ -90,16 +58,15 @@ class ReadDataByIdentifierContainer(object):
             length = len(DIDResponseComponent)
             result = (
                 DIDResponseComponent,
-                input[length: ],
-                expectedResponseList[1: ]
+                input[length:],
+                expectedResponseList[1:]
             )
             return result
-
 
         dids: str | List[str] = parameter
         if type(dids) is not list:
             dids = [dids]
-        logging.info(f"List of dids: {dids}")
+        logging.debug(f"List of dids: {dids}")
         # Adding acceptance of lists at this point, as the spec allows for multiple rdbi request to be concatenated ...
         requestSIDFunction = target.readDataByIdentifierContainer.requestSIDFunctions[
             dids[0]
@@ -108,12 +75,11 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.requestDIDFunctions[did]
             for did in dids
         ]
-        # logging.info(f"requestDIDFunctions: {requestDIDFunctions}")
-        expectedResponseTypes: List[PosResponse] = [
+        expectedResponseObjects: List[PosResponse] = [
             target.readDataByIdentifierContainer.posResponseObjects[did]
             for did in dids
         ]
-        logging.info(f"expectedResponseTypes per did: {expectedResponseTypes}")
+        logging.debug(f"expectedResponseObjects per did: {expectedResponseObjects}")
         # This is the same for all RDBI responses, irrespective of list or single input
         negativeResponseFunction = (
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
@@ -126,46 +92,43 @@ class ReadDataByIdentifierContainer(object):
         request = requestSIDFunction()
         for didFunc in requestDIDFunctions:
             request += didFunc()  # ... creates an array of integers
-        logging.info(f"request: {request}")
+        logging.debug(f"uds request: {request}")
         # Send request and receive the response ...
         response = target.send(
             request
         )  # ... this returns a single response which may cover 1 or more DID response values
-        logging.info(f"response: {response}")
+        logging.debug(f"uds response: {response}")
         negativeResponse = negativeResponseFunction(
             response
         )  # ... return nrc value if a negative response is received
         if negativeResponse:
             return negativeResponse
-        logging.info(f"----- Start response parsing ------")
+        logging.debug("----- Start response parsing ------")
         # We have a positive response so check that it makes sense to us ...
-
-        # Check SID and take it from first expected response (they all have the same)
-        expectedResponseTypes[0].checkSIDInResponse(response)
-        SIDLength = expectedResponseTypes[0].sidLength
-        logging.info(f"SIDLength: {SIDLength}")
-        # remove sid from response for further parsing the did responses
+        # SID is the same for all expected PosResponses, just take the first
+        expectedResponseObjects[0].checkSIDInResponse(response)
+        SIDLength = expectedResponseObjects[0].sidLength
+        logging.debug(f"SIDLength: {SIDLength}")
+        # remove SID from response for further parsing the response per DID/ PosResponse
         responseRemaining = response[SIDLength:]
-
-        expectedResponses = expectedResponseTypes[:]  # copy
-
+        # TODO: refactor this? DIDresponses/ DIDResponseComponents not needed for decoding anymore
+        expectedResponses = expectedResponseObjects[:]  # copy
         DIDresponses: List[List[int]] = []
-        for i in range(len(expectedResponseTypes)):
+        for i in range(len(expectedResponseObjects)):
             (
                 DIDResponseComponent,
                 responseRemaining,
                 expectedResponses,
             ) = popResponseElement(responseRemaining, expectedResponses)
-            expectedResponseTypes[i].checkDIDInResponse(DIDResponseComponent)
+            expectedResponseObjects[i].checkDIDInResponse(DIDResponseComponent)
             DIDresponses.append(DIDResponseComponent)
-        logging.info(f"Parsed partial response per DID: {DIDresponses}")
+        logging.debug(f"Parsed partial response per DID: {DIDresponses}")
         # All is still good, so return the response ...
-        # TODO: in whcih responses are the params set?
-        logging.info(f"----- Start response decoding ------")
-        logging.info(f"Response Types after Parsing: {expectedResponseTypes}")
+        logging.debug("----- Start response decoding ------")
+        logging.debug(f"Response Types after Parsing: {expectedResponseObjects}")
         returnValue = tuple(
             [
-                expectedResponseTypes[i].decode()
+                expectedResponseObjects[i].decode()
                 for i in range(len(DIDresponses))
             ]
         )
@@ -188,7 +151,8 @@ class ReadDataByIdentifierContainer(object):
         self.requestSIDFunctions[dictionaryEntry] = aFunction
 
     ##
-    # @brief method to add function to container - requestDIDFunction handles the 1 to N DID components of the request message
+    # @brief method to add function to container - requestDIDFunction handles the 1 to N DID components
+    # of the request message
     def add_requestDIDFunction(self, aFunction, dictionaryEntry):
         self.requestDIDFunctions[dictionaryEntry] = aFunction
 
@@ -200,7 +164,8 @@ class ReadDataByIdentifierContainer(object):
         self.posResponseObjects[dictionaryEntry] = aObject
 
     ##
-    # @brief method to add function to container - negativeResponseFunction handles the checking of all possible negative response codes in the response message, raising the required exception
+    # @brief method to add function to container - negativeResponseFunction handles the checking of all possible
+    # negative response codes in the response message, raising the required exception
     def add_negativeResponseFunction(self, aFunction, dictionaryEntry):
         self.negativeResponseFunctions[dictionaryEntry] = aFunction
 
