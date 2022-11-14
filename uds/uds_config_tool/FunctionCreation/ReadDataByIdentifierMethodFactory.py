@@ -10,7 +10,6 @@ __email__ = "richard.clubb@embeduk.com"
 __status__ = "Development"
 
 import logging
-import sys
 from typing import List
 
 from uds.uds_config_tool import DecodeFunctions
@@ -25,6 +24,7 @@ from uds.uds_config_tool.UtilityFunctions import (
 # Extended to cater for multiple DIDs in a request - typically rather than processing
 # a whole response in one go, we break it down and process each part separately.
 # We can cater for multiple DIDs by then combining whatever calls we need to.
+log = logging.getLogger(__name__)
 
 requestSIDFuncTemplate = str("def {0}():\n" "    return {1}")
 requestDIDFuncTemplate = str("def {0}():\n" "    return {1}")
@@ -83,25 +83,21 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
         return (locals()[requestSIDFuncName], locals()[requestDIDFuncName])
 
     @staticmethod
-    def create_checkPositiveResponseFunctions(diagServiceElement, xmlElements):
-        logging.debug("----- create_checkPositiveResponseFunctions() -----")
+    def create_positiveResponseObjects(diagServiceElement, xmlElements):
 
         positiveResponseElement = xmlElements[
             (diagServiceElement.find("POS-RESPONSE-REFS"))
             .find("POS-RESPONSE-REF")
             .attrib["ID-REF"]
         ]
-        logging.debug(positiveResponseElement.find("SHORT-NAME").text)
         paramsElement = positiveResponseElement.find("PARAMS")
-
-        # not needed?
+        # PosResponse attributes
         responseId = 0
         diagnosticId = 0
         SIDLength = 0
         DIDLength = 0
         params: List[Param] = []
-        param: Param = None
-        # TODO: add handling of multiple data params -> have a list of params in PosResponse
+
         for paramElement in paramsElement:
             try:
                 semantic = None
@@ -111,30 +107,23 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                     pass
 
                 short_name = (paramElement.find("SHORT-NAME")).text
-                logging.debug(f"params short name: {short_name}")
                 byte_position = int((paramElement.find("BYTE-POSITION")).text)
-                logging.debug(f"params byte position: {byte_position}")
 
                 if semantic == "SERVICE-ID":
-                    logging.debug("PARAM: SID")
                     responseId = int(paramElement.find("CODED-VALUE").text)
                     bitLength = int(
                         (paramElement.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     SIDLength = int(bitLength / 8)
-                    logging.debug(f"SIDLength: {SIDLength}")
                 elif semantic == "ID":
-                    logging.debug("PARAM: ID")
                     diagnosticId = int(paramElement.find("CODED-VALUE").text)
                     bitLength = int(
                         (paramElement.find("DIAG-CODED-TYPE")).find("BIT-LENGTH").text
                     )
                     DIDLength = int(bitLength / 8)
-                    logging.debug(f"DIDLength: {DIDLength}")
                 elif semantic == "DATA":
                     diagCodedType: DiagCodedType = None
                     # need to parse the param for the DIAG CODED TYPE
-                    logging.debug("PARAM: DATA")
                     dataObjectElement = xmlElements[
                         (paramElement.find("DOP-REF")).attrib["ID-REF"]
                     ]
@@ -148,15 +137,13 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                         pass
                     param: Param = Param(short_name, byte_position, diagCodedType)
                     params.append(param)
-                    logging.debug(f"params list: {params}")
                 else:
                     # not a PARAM with SID, ID (= DID), or DATA
                     pass
-            except:
-                logging.debug(sys.exc_info())
+            except Exception as e:
+                log.debug(e)
 
         posResponse = PosResponse(params, DIDLength, diagnosticId, SIDLength, responseId)
-        logging.debug(f"posResponse: {posResponse}")
         return posResponse
 
     @staticmethod
@@ -209,8 +196,8 @@ class ReadDataByIdentifierMethodFactory(IServiceMethodFactory):
                             expectedNrcDict[int(nrcElem.find("LOWER-LIMIT").text)] = (
                                 nrcElem.find("COMPU-CONST").find("VT").text
                             )
-                    except:
-                        logging.debug(sys.exc_info())
+                    except Exception as e:
+                        log.debug(e)
                 pass
 
         negativeResponseFunctionString = negativeResponseFuncTemplate.format(

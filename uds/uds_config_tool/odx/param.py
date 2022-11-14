@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 from uds.uds_config_tool import DecodeFunctions
@@ -34,19 +33,13 @@ class Param():
             toDecode = self.data[:-terminationCharLength]
         encodingType = self.diagCodedType.base_data_type
         if encodingType == "A_ASCIISTRING":
-            logging.debug("Trying to decode A_ASCIISTRING:")
             decodedResponse = DecodeFunctions.intListToString(toDecode, None)
-            logging.debug(f"decoded ascii: {decodedResponse}")
         elif encodingType == "A_UINT32":
-            logging.debug("Trying to decode A_UINT32:")
             # no decoding needed?
             decodedResponse = toDecode
-            logging.debug(f"decoded uint32: {decodedResponse}")
         else:
-            logging.debug("Trying to decode another encoding type:")
             # no decoding needed?
             decodedResponse = toDecode
-            logging.debug(f"other decodedResponse: {decodedResponse}")
         return decodedResponse
 
     def __repr__(self):

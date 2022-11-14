@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
@@ -40,7 +39,6 @@ class StandardLengthType(DiagCodedType):
         :param response: the response to parse the length from (not needed for standard length)
         :return: length in bits as int
         """
-        logging.debug("Calculating length in standardLengthType")
         return self.bitLength
 
     def __repr__(self):
@@ -94,14 +92,10 @@ class MinMaxLengthType(DiagCodedType):
         # ZERO, HEX-FF end after max length, at end of response or after termination char
         if self.termination.value != "END-OF-PDU":
             for dynamicLength, value in enumerate(response):
-                logging.debug(f"dynamicLength: {dynamicLength}, value: {value}")
                 if value == self.termination.value and dynamicLength < self.minLength:
                     raise ValueError("Response shorter than expected minimum")
                 elif value == self.termination.value or dynamicLength == self.maxLength:
-                    logging.debug(f"Found termination char {self.termination} or reached max length {self.maxLength}")
-                    logging.debug(f"Length at end condition: {dynamicLength}")
-                    # TODO: does it ALWAYS have a termination char, even if max length used? -> handle separately:
-                    # + 1 for termination char, no + 1 for max length
+                    # does it ALWAYS have a termination char, even if max length used?
                     return dynamicLength + 1  # account for 0 indexing
                 elif self.maxLength is not None and dynamicLength > self.maxLength:
                     raise ValueError("Response longer than expected max length")

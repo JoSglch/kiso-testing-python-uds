@@ -194,11 +194,8 @@ def isDiagServiceTransmissionOnly(diagServiceElement):
 def findDescendant(name: str, root: XMLElement) -> XMLElement:
     """Search for an element in all descendants of an element by tag name, returns first instance
     """
-    logging.debug(f"\nSearch {name} in {root} ({(root.find('SHORT-NAME')).text})")
     for child in root.iter():
         if child.tag == name:
-            logging.debug(f"Found child: {child}")
-            logging.debug(f"Reference ID is: {child.attrib['ID-REF']}")
             return child
     return None
 
@@ -208,21 +205,16 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
     DiagCodedType object containing necessary info to calculate the length of the response
     and decode it
     """
-    logging.debug("DATA OBJECT PROP")
     diagCodedTypeElement = dataObjectProp.find("DIAG-CODED-TYPE")
     lengthType = diagCodedTypeElement.get(f"{xsi}type")
     base_data_type = diagCodedTypeElement.attrib["BASE-DATA-TYPE"]
     if lengthType == "STANDARD-LENGTH-TYPE":
-        logging.debug("Standard Length DOP")
         bitLengthElement = diagCodedTypeElement.find("BIT-LENGTH")
         bitLength = int(bitLengthElement.text)
         # TODO: do this in DiagCodedType instead
         byteLength = int(bitLength / 8)
-        logging.debug(f"bitLength: {bitLength}, byteLength: {byteLength}")
         diagCodedType = StandardLengthType(base_data_type, byteLength)
-        logging.debug(f"Created diagCodedType: {diagCodedType}")
     elif lengthType == "MIN-MAX-LENGTH-TYPE":
-        logging.debug("Min Max Length DOP")
         minLengthElement = diagCodedTypeElement.find("MIN-LENGTH")
         maxLengthElement = diagCodedTypeElement.find("MAX-LENGTH")
         minLength = None
@@ -233,7 +225,6 @@ def getDiagCodedTypeFromDop(dataObjectProp: XMLElement) -> DiagCodedType:
             maxLength = int(maxLengthElement.text)
         termination = diagCodedTypeElement.attrib["TERMINATION"]
         diagCodedType = MinMaxLengthType(base_data_type, minLength, maxLength, termination)
-        logging.debug(f"Created diagCodedType: {diagCodedType}")
     else:
         raise NotImplementedError(f"Handling of {lengthType} is not implemented")
     return diagCodedType
@@ -247,30 +238,24 @@ def getDiagCodedTypeFromStructure(structure: XMLElement, xmlElements: Dict[str, 
     byteSizeElement = structure.find("BYTE-SIZE")
     # STRUCTURE with BYTE-SIZE
     if structure.find("BYTE-SIZE") is not None:
-        logging.debug("Static Length Structure...")
         byteLength = int(byteSizeElement.text)
         # get decoding info from first DOP, assume same decoding for each param
         dop = xmlElements[
             findDescendant("DOP-REF", structure).attrib["ID-REF"]
         ]
         base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
-        logging.debug(f"base data type: {base_data_type}")
         diagCodedType = StandardLengthType(base_data_type, byteLength)
-        logging.debug(f"Created diagCodedType: {diagCodedType}")
     # STRUCTURE with DOP-REF
     else:
-        logging.debug("Could not get BYTE-SIZE from STRUCTURE, checking for DOP-REF")
         dopRef = findDescendant("DOP-REF", structure)
         if dopRef is None:
             raise AttributeError("Could not find DOP from Structure, and no BYTE-SIZE: ODX probably invalid")
         nestedDop = xmlElements[dopRef.attrib["ID-REF"]]
-        logging.debug(f"dopRef= {dopRef}, dop= {nestedDop}")
-        logging.debug("Nested DOP from STRUCTURE:")
         if nestedDop.tag == "DATA-OBJECT-PROP":
             diagCodedType = getDiagCodedTypeFromDop(nestedDop)
         elif nestedDop.tag == "END-OF-PDU-FIELD":
-            # TODO: handle END-OF-PDU-FIELD?
-            logging.debug("Found END-OF-PDU-FIELD")
+            # handle END-OF-PDU-FIELD?
+            pass
         else:
             # nested structure (if possible in ODX spec):
             # recursively check structure: return getDiagCodedTypeFromStructure(nestedDop, xmlElements)

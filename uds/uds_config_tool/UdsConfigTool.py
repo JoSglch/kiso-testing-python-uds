@@ -10,7 +10,6 @@ __email__ = "richard.clubb@embeduk.com"
 __status__ = "Development"
 
 
-import logging
 import xml.etree.ElementTree as ET
 
 #from uds.uds_communications.Uds.Uds import Uds
@@ -258,7 +257,6 @@ class UdsTool:
                             value, xmlElements
                         )
                     )
-                    logging.debug(f"humanName: {humanName}")
                     cls.rdbiContainer.add_requestSIDFunction(
                         requestFunctions[0], humanName
                     )  # ... note: this will now need to handle replication of this one!!!!
@@ -270,11 +268,9 @@ class UdsTool:
                     cls.rdbiContainer.add_negativeResponseFunction(
                         negativeResponseFunction, humanName
                     )
-                    logging.debug("Binding in UdsConfigTool")
-                    posResponse = ReadDataByIdentifierMethodFactory.create_checkPositiveResponseFunctions(
+                    posResponse = ReadDataByIdentifierMethodFactory.create_positiveResponseObjects(
                         value, xmlElements
                     )
-                    logging.debug(f"posResponseObject: {posResponse}")
                     cls.rdbiContainer.add_posResponseObject(posResponse, humanName)
 
                     if cls.rdbiContainer not in UdsContainerAccess.containers:

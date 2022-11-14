@@ -10,7 +10,6 @@ __email__ = "richard.clubb@embeduk.com"
 __status__ = "Development"
 
 
-import logging
 from types import MethodType
 from typing import List
 
@@ -41,32 +40,11 @@ class ReadDataByIdentifierContainer(object):
     # on this instance of the container class.
     @staticmethod
     def __readDataByIdentifier(target, parameter):
-        logging.debug(f"===== readDataByIdentifier({target}, {parameter}) =====")
-        # Some local functions to deal with use concatenation of a number of DIDs in RDBI operation ...
-
-        # just want to know about the next bit of the response, so this pops it of the front of the response
-        def popResponseElement(input, expectedResponseList: List[PosResponse]):
-            """Parses the response into partial response for each DID
-            """
-            if expectedResponseList == []:
-                raise Exception(
-                    "Total length returned not as expected. Missing elements."
-                )
-            result = None
-            # take the next PosResponse and its DIDResponseComponent
-            DIDResponseComponent: List[int] = expectedResponseList[0].parseDIDResponseComponent(input)
-            length = len(DIDResponseComponent)
-            result = (
-                DIDResponseComponent,
-                input[length:],
-                expectedResponseList[1:]
-            )
-            return result
 
         dids: str | List[str] = parameter
         if type(dids) is not list:
             dids = [dids]
-        logging.debug(f"List of dids: {dids}")
+
         # Adding acceptance of lists at this point, as the spec allows for multiple rdbi request to be concatenated ...
         requestSIDFunction = target.readDataByIdentifierContainer.requestSIDFunctions[
             dids[0]
@@ -79,7 +57,7 @@ class ReadDataByIdentifierContainer(object):
             target.readDataByIdentifierContainer.posResponseObjects[did]
             for did in dids
         ]
-        logging.debug(f"expectedResponseObjects per did: {expectedResponseObjects}")
+
         # This is the same for all RDBI responses, irrespective of list or single input
         negativeResponseFunction = (
             target.readDataByIdentifierContainer.negativeResponseFunctions[dids[0]]
@@ -92,18 +70,18 @@ class ReadDataByIdentifierContainer(object):
         request = requestSIDFunction()
         for didFunc in requestDIDFunctions:
             request += didFunc()  # ... creates an array of integers
-        logging.debug(f"uds request: {request}")
+
         # Send request and receive the response ...
         response = target.send(
             request
         )  # ... this returns a single response which may cover 1 or more DID response values
-        logging.debug(f"uds response: {response}")
+
         negativeResponse = negativeResponseFunction(
             response
         )  # ... return nrc value if a negative response is received
         if negativeResponse:
             return negativeResponse
-        logging.debug("----- Start response parsing ------")
+
         # We have a positive response so check that it makes sense to us ...
         # SID is the same for all expected PosResponses, just take the first
         expectedResponseObjects[0].checkSIDInResponse(response)
@@ -114,8 +92,7 @@ class ReadDataByIdentifierContainer(object):
         for positiveResponse in expectedResponseObjects:
             responseLength = positiveResponse.parseDIDResponseLength(responseRemaining)
             responseRemaining = responseRemaining[responseLength:]
-        logging.debug(f"PosResponses after Parsing: {expectedResponseObjects}")
-        logging.debug("----- Start response decoding ------")
+
         # after parsing each PARAM has its data and can decode it
         returnValue = tuple(
             [
@@ -127,7 +104,7 @@ class ReadDataByIdentifierContainer(object):
         if len(returnValue) == 1:
             returnValue = returnValue[
                 0
-            ]  # ...we only send back a tuple if there were multiple DIDs
+            ]  # only send back a tuple if there were multiple DIDs
         return returnValue
 
     def bind_function(self, bindObject):

@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, List
 
 from uds.uds_config_tool import DecodeFunctions
@@ -40,26 +39,18 @@ class PosResponse():
         startPosition = self.didLength
         endPosition = self.didLength
         for param in self.params:
-            logging.debug(f"startPosition: {startPosition}")
             toParse = udsResponse[startPosition:]
             paramLength = param.calculateLength(toParse)
-            logging.debug(f"calculated length: {paramLength}")
             endPosition += paramLength
-            logging.debug(f"endPosition: {endPosition}")
             data = udsResponse[startPosition: endPosition]
-            logging.debug(f"data: {data}")
             # store data in param for decoding
             param.data = data
             startPosition = endPosition
-        # result = udsResponse[:endPosition]
-        # logging.debug(f"calculated response comp: {result}")
-        result = endPosition
-        return result
+        return endPosition  # this is the total length
 
     def checkDIDInResponse(self, didResponse: List[int]) -> None:
         """compare PosResponse's DID with the DID at beginning of a response
         """
-        logging.debug("Check beginning of passed response for DID")
         actualDID = DecodeFunctions.buildIntFromList(didResponse[:self.didLength])
         if self.DID != actualDID:
             raise AttributeError(f"The expected DID {self.DID} does not match the received DID {actualDID}")
