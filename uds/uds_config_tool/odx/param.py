@@ -1,8 +1,9 @@
 import logging
 from typing import List
-from uds.uds_config_tool import DecodeFunctions
 
-from uds.uds_config_tool.odx.diag_coded_types import DiagCodedType, MinMaxLengthType
+from uds.uds_config_tool import DecodeFunctions
+from uds.uds_config_tool.odx.diag_coded_types import (DiagCodedType,
+                                                      MinMaxLengthType)
 
 
 class Param():
@@ -17,7 +18,8 @@ class Param():
         return self.diagCodedType.calculateLength(response)
 
     def decode(self) -> str:
-        """decode internal data that is set after parsing the a uds response"""
+        """decode internal data that is set after parsing a uds response
+        """
         if self.data is None:
             raise ValueError(f"Data in param is None, check if data DID response was parsed correctly")
         # there is data to decode
@@ -33,13 +35,14 @@ class Param():
             logging.info(f"decoded ascii: {decodedResponse}")
         elif encodingType == "A_UINT32":
             logging.info(f"Trying to decode A_UINT32:")
-            # TODO: how to decode?
+            # TODO: is there decoding needed?
             decodedResponse = toDecode
             logging.info(f"decoded uint32: {decodedResponse}")
         else:
             logging.info(f"Trying to decode another encoding type:")
-            # TODO: how to decode?
-            raise NotImplementedError(f"Decoding of {encodingType} is not implemented yet")
+            # TODO: is there decoding needed?
+            decodedResponse = toDecode
+            logging.info(f"other decodedResponse: {decodedResponse}")
         return decodedResponse
 
     def __repr__(self):
