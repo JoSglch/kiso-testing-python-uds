@@ -255,17 +255,17 @@ def get_diag_coded_type_from_structure(
         byte_length = int(byte_size_element.text)
         # get decoding info from first DOP, assume same decoding for each param
         dop = xml_elements[find_descendant("DOP-REF", structure).attrib["ID-REF"]]
-        diag = dop.find("DIAG-CODED-TYPE")
-        if diag is None:
-            id = structure.attrib["ID"]
-            dopid = dop.attrib["ID"]
-            tag = dop.tag
-            logging.info(f"structure: {id}, diag = {diag}, dopId = {dopid}, dop.tag = {tag}")
-        # dop is another structure:
+        # DOP is another structure:
         if dop.tag == "STRUCTURE":
+            # id = structure.attrib["ID"]
+            # dopid = dop.attrib["ID"]
+            # tag = dop.tag
+            # logging.info(f"structure: {id}, diag = {diag}, dopId = {dopid}, dop.tag = {tag}")
             base_data_type = get_diag_coded_type_from_structure(dop, xml_elements)
             logging.info(f"structure in structure =>  dop.tag = {dop.tag}: {base_data_type}")
-        base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+        else:
+            base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
+        logging.info(f"-----> Found first DCT: {base_data_type}")
         diag_coded_type = StandardLengthType(base_data_type, byte_length)
     # STRUCTURE with DOP-REF
     else:
