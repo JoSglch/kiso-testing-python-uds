@@ -255,6 +255,7 @@ def get_diag_coded_type_from_structure(
         byte_length = int(byte_size_element.text)
         # get decoding info from first DOP, assume same decoding for each param
         dop = xml_elements[find_descendant("DOP-REF", structure).attrib["ID-REF"]]
+        logging.info(f"structure: {structure}, dop = {dop}")
         base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
         diag_coded_type = StandardLengthType(base_data_type, byte_length)
     # STRUCTURE with DOP-REF
