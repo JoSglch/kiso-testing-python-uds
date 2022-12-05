@@ -256,13 +256,13 @@ def get_diag_coded_type_from_structure(
         byte_length = int(byte_size_element.text)
         # get decoding info from first DOP, assume same decoding for each param
         dop = xml_elements[find_descendant("DOP-REF", structure).attrib["ID-REF"]]
-        # DOP is another structure:
+        # DOP is another structure, need to go deeper until we find a diag coded type:
         if dop.tag == "STRUCTURE":
-            id = structure.attrib["ID"]
-            dopid = dop.attrib["ID"]
-            tag = dop.tag
-            logging.info(f"structure: {id}, dopId = {dopid}, dop.tag = {tag}")
-            logging.warning(f"recursing ........... {get_diag_coded_type_from_structure(dop, xml_elements)}")
+            # id = structure.attrib["ID"]
+            # dopid = dop.attrib["ID"]
+            # tag = dop.tag
+            # logging.info(f"structure: {id}, dopId = {dopid}, dop.tag = {tag}")
+            logging.warning(f"recursing ...........")
             return get_diag_coded_type_from_structure(dop, xml_elements)
         else:
             base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
