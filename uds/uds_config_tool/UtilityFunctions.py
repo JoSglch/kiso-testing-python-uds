@@ -263,7 +263,7 @@ def get_diag_coded_type_from_structure(
             tag = dop.tag
             logging.info(f"structure: {id}, dopId = {dopid}, dop.tag = {tag}")
             logging.warning(f"recursing ........... {get_diag_coded_type_from_structure(dop, xml_elements)}")
-            diag_coded_type = get_diag_coded_type_from_structure(dop, xml_elements)
+            return get_diag_coded_type_from_structure(dop, xml_elements)
         else:
             base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
             diag_coded_type = StandardLengthType(base_data_type, byte_length)
