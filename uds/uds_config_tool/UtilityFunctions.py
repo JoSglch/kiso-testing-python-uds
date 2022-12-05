@@ -249,6 +249,7 @@ def get_diag_coded_type_from_structure(
     :param xml_elements: dict containing all xml elements by ID
     :return: the DiagCodedType containing necessary info to calculate the length of the response and decode it
     """
+    diag_coded_type = None
     byte_size_element = structure.find("BYTE-SIZE")
     # STRUCTURE with BYTE-SIZE
     if structure.find("BYTE-SIZE") is not None:
@@ -257,16 +258,15 @@ def get_diag_coded_type_from_structure(
         dop = xml_elements[find_descendant("DOP-REF", structure).attrib["ID-REF"]]
         # DOP is another structure:
         if dop.tag == "STRUCTURE":
-            # id = structure.attrib["ID"]
-            # dopid = dop.attrib["ID"]
-            # tag = dop.tag
-            # logging.info(f"structure: {id}, diag = {diag}, dopId = {dopid}, dop.tag = {tag}")
+            id = structure.attrib["ID"]
+            dopid = dop.attrib["ID"]
+            tag = dop.tag
+            logging.info(f"structure: {id}, dopId = {dopid}, dop.tag = {tag}")
             logging.warning(f"recursing ........... {get_diag_coded_type_from_structure(dop, xml_elements)}")
-            return get_diag_coded_type_from_structure(dop, xml_elements)
+            diag_coded_type = get_diag_coded_type_from_structure(dop, xml_elements)
         else:
             base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
             diag_coded_type = StandardLengthType(base_data_type, byte_length)
-        logging.info(f"-----> Found first DCT: {diag_coded_type}")
     # STRUCTURE with DOP-REF
     else:
         dop_ref = find_descendant("DOP-REF", structure)
@@ -284,6 +284,7 @@ def get_diag_coded_type_from_structure(
             # nested structure (if possible in ODX spec):
             # recursively check structure: return get_diag_coded_type_from_structure(nestedDop, xmlElements)
             raise NotImplementedError(f"parsing of {nested_dop.tag} is not implemented")
+    logging.info(f"returning dct: {diag_coded_type}")
     return diag_coded_type
 
 
