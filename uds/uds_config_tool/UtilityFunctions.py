@@ -263,7 +263,7 @@ def get_diag_coded_type_from_structure(
             logging.info(f"structure: {id}, diag = {diag}, dopId = {dopid}, dop.tag = {tag}")
         # dop is another structure:
         if dop.tag == "STRUCTURE":
-            base_data_type = get_diag_coded_type_from_dop(dop, xml_elements)
+            base_data_type = get_diag_coded_type_from_structure(dop, xml_elements)
             logging.info(f"structure in structure =>  dop.tag = {dop.tag}: {base_data_type}")
         base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
         diag_coded_type = StandardLengthType(base_data_type, byte_length)
