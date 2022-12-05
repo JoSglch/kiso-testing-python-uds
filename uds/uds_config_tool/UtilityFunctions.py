@@ -261,12 +261,12 @@ def get_diag_coded_type_from_structure(
             # dopid = dop.attrib["ID"]
             # tag = dop.tag
             # logging.info(f"structure: {id}, diag = {diag}, dopId = {dopid}, dop.tag = {tag}")
-            base_data_type = get_diag_coded_type_from_structure(dop, xml_elements)
-            logging.info(f"structure in structure =>  dop.tag = {dop.tag}: {base_data_type}")
+            logging.warning(f"recursing ........... {get_diag_coded_type_from_structure(dop, xml_elements)}")
+            return get_diag_coded_type_from_structure(dop, xml_elements)
         else:
             base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
-        logging.info(f"-----> Found first DCT: {base_data_type}")
         diag_coded_type = StandardLengthType(base_data_type, byte_length)
+        logging.info(f"-----> Found first DCT: {diag_coded_type}")
     # STRUCTURE with DOP-REF
     else:
         dop_ref = find_descendant("DOP-REF", structure)
