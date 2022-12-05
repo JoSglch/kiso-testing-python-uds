@@ -265,7 +265,7 @@ def get_diag_coded_type_from_structure(
             return get_diag_coded_type_from_structure(dop, xml_elements)
         else:
             base_data_type = dop.find("DIAG-CODED-TYPE").attrib["BASE-DATA-TYPE"]
-        diag_coded_type = StandardLengthType(base_data_type, byte_length)
+            diag_coded_type = StandardLengthType(base_data_type, byte_length)
         logging.info(f"-----> Found first DCT: {diag_coded_type}")
     # STRUCTURE with DOP-REF
     else:
